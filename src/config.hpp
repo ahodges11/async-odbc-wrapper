@@ -4,6 +4,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <sql.h>
 
 namespace aodbc
 {
