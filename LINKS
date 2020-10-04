@@ -1,0 +1,10 @@
+unixODBC docs: http://www.unixodbc.org/doc/
+low level programmers guide to unixODBC: http://www.unixodbc.org/doc/ProgrammerManual/Tutorial/
+unixODBC glossary: http://www.unixodbc.org/doc/ProgrammerManual/Tutorial/gloss.html#envattr
+
+microsoft ODBC async main page: https://docs.microsoft.com/en-us/sql/odbc/reference/develop-app/asynchronous-execution?view=sql-server-ver15
+microsoft async ODBC example: https://docs.microsoft.com/en-us/sql/odbc/reference/develop-app/asynchronous-execution-notification-method?view=sql-server-ver15
+Microsoft ODBC API reference: https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/odbc-api-reference?view=sql-server-ver15
+microsoft ODBC programmers refernce: https://docs.microsoft.com/en-us/sql/odbc/reference/odbc-programmer-s-reference?view=sql-server-ver15
+
+nanodbc - a working example of the c ODBC lib in use: https://nanodbc.github.io/nanodbc/b
