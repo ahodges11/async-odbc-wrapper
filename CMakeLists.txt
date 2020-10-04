@@ -12,7 +12,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 hunter_add_package(Boost)
 find_package(Boost)
-
+find_package(Threads)
+find_package(ODBC)
 
 
 file(GLOB_RECURSE cpp_files CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp")
@@ -27,7 +28,7 @@ target_compile_definitions(aodbc-lib
         )
 
 target_include_directories(aodbc-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(aodbc-lib PUBLIC Boost::boost)
+target_link_libraries(aodbc-lib PUBLIC Boost::boost Threads::Threads ${ODBC_LIBRARIES})
 target_compile_options(aodbc-lib PRIVATE -Werror -Wall -Wextra -pedantic)
 
 
