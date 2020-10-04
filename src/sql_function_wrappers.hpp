@@ -60,7 +60,7 @@ namespace aodbc
 
     void sql_dealloc_env(SQLHENV *handle_env)
     {
-        handle_odbc_call(*handle_env, SQL_HANDLE_ENV, SQLFreeHandle(SQL_HANDLE_ENV,*handle_env));
+        handle_odbc_call(*handle_env, SQL_HANDLE_ENV, SQLFreeHandle(SQL_HANDLE_ENV, *handle_env));
     }
 
     void sql_set_env_attr(SQLHENV *handle_env, SQLINTEGER attribute, SQLPOINTER value_ptr, SQLINTEGER string_length)
@@ -76,7 +76,7 @@ namespace aodbc
 
     void sql_dealloc_dbc(SQLHDBC *handle_dbc)
     {
-        handle_odbc_call(*handle_dbc, SQL_HANDLE_DBC, SQLFreeHandle(SQL_HANDLE_DBC,*handle_dbc));
+        handle_odbc_call(*handle_dbc, SQL_HANDLE_DBC, SQLFreeHandle(SQL_HANDLE_DBC, *handle_dbc));
     }
 
     void sql_driver_connect(SQLHDBC *handle_dbc, std::string &in_conn_str)
@@ -91,6 +91,11 @@ namespace aodbc
                                           0,
                                           nullptr,
                                           SQL_DRIVER_NOPROMPT));
+    }
+
+    void sql_driver_disconnect(SQLHDBC *handle_dbc)
+    {
+        handle_odbc_call(*handle_dbc, SQL_HANDLE_DBC, SQLDisconnect(*handle_dbc));
     }
 
 }   // namespace aodbc
