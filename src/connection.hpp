@@ -4,31 +4,65 @@
 
 #pragma once
 
-#include <sql.h>
+#include "log.hpp"
+#include "sql_function_wrappers.hpp"
 
+#include <boost/core/ignore_unused.hpp>
 #include <iostream>
-#define log(message) std::cout << message << std::endl;
+#include <string>
 
 namespace aodbc
 {
     struct connection
     {
-        void run()
+        connection(SQLHENV *handle_env, std::string connection_str)
+        : connection_str_(std::move(connection_str))
+        , connected_(false)
+        , handle_env_(handle_env)
+        , handle_dbc_(nullptr)
         {
-            // Alloc handle_env and register version
-            retcode = SQLAllocEnv(&handle_env);   // TODO could be SQLAllocHandle
-            if ((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO))
+            // allocate a connection
+            sql_alloc_dbc(handle_env_, &handle_dbc_);
+        }
+
+        void connect()
+        {
+            // connect to the driver
+            sql_driver_connect(&handle_dbc_, connection_str_);
+            log_info("Connected driver");
+            connected_ = true;
+        }
+
+        void disconnect()
+        {
+            assert(connected());
+            sql_driver_disconnect(&handle_dbc_);
+            connected_ = false;
+        }
+
+        void execute(std::string sql_statement) { boost::ignore_unused(sql_statement); }
+
+        bool connected() const { return connected_; }
+        bool valid() const { return handle_dbc_; }
+
+        ~connection()
+        {
+            if (connected_)
             {
-                // Error in AllocHandle
-                log("")
+                log_warning("connection destroyed while it was still connected.");
+                disconnect();
+            }
+            if (valid())
+            {
+                sql_dealloc_dbc(&handle_dbc_);
             }
         }
 
       private:
-        SQLHENV   handle_env;   // Holds all info about ODBC environment.
-        SQLHDBC   handle_dbc;
-        SQLHSTMT  handle_stmt = 0;
-        SQLRETURN retcode;
+        std::string connection_str_;
+        bool        connected_;
+        SQLHENV *   handle_env_;   // ptr to the connection's environment handle
+        SQLHDBC     handle_dbc_;   // the underlying odbc connection handle
     };
 
 }   // namespace aodbc
