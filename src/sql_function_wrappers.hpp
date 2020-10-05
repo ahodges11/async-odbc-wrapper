@@ -98,4 +98,79 @@ namespace aodbc
         handle_odbc_call(*handle_dbc, SQL_HANDLE_DBC, SQLDisconnect(*handle_dbc));
     }
 
+    // --------------- DATABASE STATEMENT RELATED CALLS ---------------------
+
+    void sql_alloc_stmt(SQLHDBC *handle_dbc, SQLHSTMT *handle_stmt)
+    {
+        handle_odbc_call(*handle_dbc, SQL_HANDLE_DBC, SQLAllocHandle(SQL_HANDLE_STMT, *handle_dbc, handle_stmt));
+    }
+
+    void sql_dealloc_stmt(SQLHSTMT *handle_stmt)
+    {
+        handle_odbc_call(*handle_stmt, SQL_HANDLE_STMT, SQLFreeHandle(SQL_HANDLE_STMT, *handle_stmt));
+    }
+
+    void sql_exec_direct(SQLHSTMT *handle_stmt, std::string &statement)
+    {
+        handle_odbc_call(
+            *handle_stmt,
+            SQL_HANDLE_STMT,
+            SQLExecDirect(*handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()));
+    }
+
+    void sql_row_count(SQLHSTMT *handle_stmt, SQLLEN *row_count)
+    {
+        handle_odbc_call(*handle_stmt, SQL_HANDLE_STMT, SQLRowCount(*handle_stmt, row_count));
+    }
+
+    void sql_num_result_cols(SQLHSTMT *handle_stmt, SQLSMALLINT *num_result_cols)
+    {
+        handle_odbc_call(handle_stmt, SQL_HANDLE_STMT, SQLNumResultCols(*handle_stmt, num_result_cols));
+    }
+
+    void sql_set_max_rows(SQLHSTMT *handle_stmt, SQLULEN max_rows)
+    {
+        handle_odbc_call(*handle_stmt,
+                         SQL_HANDLE_STMT,
+                         SQLSetStmtAttr(*handle_stmt,
+                                        SQL_ATTR_MAX_ROWS,
+                                        reinterpret_cast< SQLPOINTER >(static_cast< uintptr_t >(max_rows)),
+                                        SQL_IS_UINTEGER));
+    }
+
+    SQLULEN sql_get_max_rows(SQLHSTMT *handle_stmt)
+    {
+        SQLULEN max_rows;
+        handle_odbc_call(
+            *handle_stmt,
+            SQL_HANDLE_STMT,
+            SQLGetStmtAttr(*handle_stmt, SQL_ATTR_MAX_ROWS, reinterpret_cast< SQLPOINTER >(&max_rows), 0, nullptr));
+        return max_rows;
+    }
+
+    void sql_set_query_timeout(SQLHSTMT *handle_stmt, SQLULEN seconds)
+    {
+        handle_odbc_call(*handle_stmt,
+                         SQL_HANDLE_STMT,
+                         SQLSetStmtAttr(*handle_stmt,
+                                        SQL_ATTR_QUERY_TIMEOUT,
+                                        reinterpret_cast< SQLPOINTER >(static_cast< uintptr_t >(seconds)),
+                                        SQL_IS_UINTEGER));
+    }
+
+    SQLULEN sql_get_query_timeout(SQLHSTMT *handle_stmt)
+    {
+        SQLULEN seconds;
+        handle_odbc_call(
+            *handle_stmt,
+            SQL_HANDLE_STMT,
+            SQLGetStmtAttr(*handle_stmt, SQL_ATTR_QUERY_TIMEOUT, reinterpret_cast< SQLPOINTER >(&seconds), 0, nullptr));
+        return seconds;
+    }
+
+    void sql_free_stmt(SQLHSTMT *handle_stmt, SQLUSMALLINT option)
+    {
+        handle_odbc_call(*handle_stmt,SQL_HANDLE_STMT,SQLFreeStmt(*handle_stmt,option));
+    }
+
 }   // namespace aodbc
