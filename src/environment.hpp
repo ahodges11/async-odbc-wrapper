@@ -22,7 +22,7 @@ namespace aodbc
     {
         environment() noexcept
         : initialised_(false)
-        , handle_env(nullptr)
+        , handle_env(SQL_NULL_HANDLE)
         {
         }
 
