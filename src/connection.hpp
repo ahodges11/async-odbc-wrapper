@@ -6,6 +6,7 @@
 
 #include "log.hpp"
 #include "sql_function_wrappers.hpp"
+#include "statement.hpp"
 
 #include <boost/core/ignore_unused.hpp>
 #include <iostream>
@@ -19,7 +20,7 @@ namespace aodbc
         : connection_str_(std::move(connection_str))
         , connected_(false)
         , handle_env_(handle_env)
-        , handle_dbc_(nullptr)
+        , handle_dbc_(SQL_NULL_HANDLE)
         {
             // allocate a connection
             sql_alloc_dbc(handle_env_, &handle_dbc_);
@@ -40,7 +41,13 @@ namespace aodbc
             connected_ = false;
         }
 
-        void execute(std::string sql_statement) { boost::ignore_unused(sql_statement); }
+        statement create_statement()
+        {
+            auto stmt = statement();
+            sql_alloc_stmt(&handle_dbc_,stmt.get_handle());
+            return stmt;
+        }
+
 
         bool connected() const { return connected_; }
         bool valid() const { return handle_dbc_; }
