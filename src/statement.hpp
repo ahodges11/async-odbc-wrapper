@@ -42,10 +42,9 @@ namespace aodbc
         /// @return Returns a result_set containing the data produced by the query
         result_set execute_query(std::string &sql_statement)
         {
-            auto result = result_set();
             free_stmt_close(); // Close any existing cursor
             sql_exec_direct(&handle_stmt_,sql_statement);
-
+            return result_set(*this);
         }
 
     };
