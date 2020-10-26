@@ -4,16 +4,95 @@
 
 #pragma once
 
+#include "sql.h"
+#include "sqlext.h"
 #include "types/date.hpp"
-#include "types/time.hpp"
-#include "types/timestamp.hpp"
 #include "types/decimal.hpp"
 #include "types/nullable.hpp"
+#include "types/time.hpp"
+#include "types/timestamp.hpp"
+#include <tuple>
 
-
+#include <iostream>
 #include <variant>
 #include <vector>
-#include <iostream>
+
+namespace aodbc::null_types
+{
+    typedef types::nullable<bool> aodbc_bit;
+
+    typedef types::nullable< std::int64_t > aodbc_bigint;
+    // typedef std::int64_t  aodbc_sbigint;
+    // typedef std::uint64_t aodbc_ubigint;
+
+    typedef types::nullable< std::int32_t > aodbc_int;
+    // typedef std::int32_t  aodbc_sint;
+    // typedef std::uint32_t aodbc_uint;
+
+    typedef types::nullable< std::int16_t > aodbc_short;
+    // typedef std::int16_t  aodbc_sshort;
+    // typedef std::uint16_t aodbc_ushort;
+
+    typedef types::nullable< std::uint8_t > aodbc_tinyint;
+    // typedef std::int8_t  aodbc_stinyint;
+    // typedef std::uint8_t aodbc_utinyint;
+
+    typedef types::nullable< float > aodbc_float;
+    typedef double                   aodbc_double;
+
+    typedef types::nullable< std::string >    aodbc_varchar;
+    typedef types::nullable< std::u16string > aodbc_nvarchar;
+
+    typedef types::nullable< std::vector< char > > aodbc_binary;   // binary type
+
+    typedef types::nullable< types::date >      aodbc_date;
+    typedef types::nullable< types::time >      aodbc_time;
+    typedef types::nullable< types::timestamp > aodbc_timestamp;
+
+    typedef types::nullable< types::decimal > aodbc_decimal;
+
+    inline std::tuple<std::size_t,std::size_t> sqltype_to_c_size_and_alignment(int sqltype)
+    {
+        switch (sqltype)
+        {
+        case SQL_BIT:
+            return std::make_tuple(sizeof(aodbc_bit),alignof(aodbc_bit));
+        case SQL_BIGINT:
+            return std::make_tuple(sizeof(aodbc_bigint),alignof(aodbc_bigint));
+        case SQL_INTEGER:
+            return std::make_tuple(sizeof(aodbc_int),alignof(aodbc_int));
+        case SQL_SMALLINT:
+            return std::make_tuple(sizeof(aodbc_short),alignof(aodbc_short));
+        case SQL_TINYINT:
+            return std::make_tuple(sizeof(aodbc_tinyint),alignof(aodbc_tinyint));
+        case SQL_REAL: //TODO FLOAD AND DOUBLE
+            return std::make_tuple(sizeof(aodbc_float),alignof(aodbc_float));
+        case SQL_DOUBLE:
+            return std::make_tuple(sizeof(aodbc_double),alignof(aodbc_double));
+        case SQL_FLOAT:
+            return std::make_tuple(sizeof(aodbc_double),alignof(aodbc_double));
+        case SQL_CHAR:
+            return std::make_tuple(sizeof(aodbc_varchar),alignof(aodbc_varchar));
+        case SQL_VARCHAR:
+            return std::make_tuple(sizeof(aodbc_varchar),alignof(aodbc_varchar));
+        case SQL_WCHAR:
+            return std::make_tuple(sizeof(aodbc_nvarchar),alignof(aodbc_nvarchar));
+        case SQL_BINARY:
+            return std::make_tuple(sizeof(aodbc_binary),alignof(aodbc_binary));
+        case SQL_TYPE_DATE:
+            return std::make_tuple(sizeof(aodbc_date),alignof(aodbc_date));
+        case -154: // SQL_TYPE_TIME incorrect?
+            return std::make_tuple(sizeof(aodbc_time),alignof(aodbc_time));
+        case SQL_TYPE_TIMESTAMP:
+            return std::make_tuple(sizeof(aodbc_timestamp),alignof(aodbc_timestamp));
+        case SQL_DECIMAL:
+            return std::make_tuple(sizeof(aodbc_decimal),alignof(aodbc_decimal));
+        default:
+            throw std::runtime_error("invalid type in sqltype_to_c_alignment.");
+        }
+    }
+
+}   // namespace aodbc::null_types
 
 namespace aodbc::types
 {
@@ -22,7 +101,6 @@ namespace aodbc::types
     typedef std::int64_t  aodbc_bigint;
     typedef std::int64_t  aodbc_sbigint;
     typedef std::uint64_t aodbc_ubigint;
-
 
     typedef std::int32_t  aodbc_int;
     typedef std::int32_t  aodbc_sint;
@@ -137,61 +215,6 @@ namespace aodbc::types
                                         aodbc_time,
                                         aodbc_timestamp,
                                         aodbc_decimal,
-                                        aodbc_binary>;
-
-
-
-    namespace detail
-    {
-        void print_type_sizes()
-        {
-            std::cout << "aodbc_null: " << sizeof(aodbc::types::aodbc_null) << std::endl;
-            std::cout << "aodbc_bit: " << sizeof(aodbc::types::aodbc_bit) << std::endl;
-            std::cout << "aodbc_sbigint: "  << sizeof(aodbc::types::aodbc_sbigint) << std::endl;
-            std::cout << "aodbc_ubigint: "  << sizeof(aodbc::types::aodbc_ubigint) << std::endl;
-            std::cout << "aodbc_sint: "  << sizeof(aodbc::types::aodbc_sint) << std::endl;
-            std::cout << "aodbc_uint: "  << sizeof(aodbc::types::aodbc_uint) << std::endl;
-            std::cout << "aodbc_sshort: "  << sizeof(aodbc::types::aodbc_sshort) << std::endl;
-            std::cout << "aodbc_ushort: "  << sizeof(aodbc::types::aodbc_ushort) << std::endl;
-            std::cout << "aodbc_stinyint: "  << sizeof(aodbc::types::aodbc_stinyint) << std::endl;
-            std::cout << "aodbc_utinyint: "  << sizeof(aodbc::types::aodbc_utinyint) << std::endl;
-            std::cout << "aodbc_varchar: "  << sizeof(aodbc::types::aodbc_varchar) << std::endl;
-            std::cout << "aodbc_nvarchar: "  << sizeof(aodbc::types::aodbc_nvarchar) << std::endl;
-            std::cout << "aodbc_float: "  << sizeof(aodbc::types::aodbc_float) << std::endl;
-            std::cout << "aodbc_double: "  << sizeof(aodbc::types::aodbc_double) << std::endl;
-            std::cout << "aodbc_date: "  << sizeof(aodbc::types::aodbc_date) << std::endl;
-            std::cout << "aodbc_date: "  << sizeof(aodbc::types::aodbc_date) << std::endl;
-            std::cout << "aodbc_time: "  << sizeof(aodbc::types::aodbc_time) << std::endl;
-            std::cout << "aodbc_timestamp: "  << sizeof(aodbc::types::aodbc_timestamp) << std::endl;
-            std::cout << "aodbc_decimal: "  << sizeof(aodbc::types::aodbc_decimal) << std::endl;
-            std::cout << "aodbc_binary: "  << sizeof(aodbc::types::aodbc_binary) << std::endl;
-            std::cout << "types_variant: " << sizeof(aodbc::types::types_variant) << std::endl;
-        }
-
-        void print_type_alignment()
-        {
-            std::cout << "aodbc_null: " << alignof(aodbc::types::aodbc_null) << std::endl;
-            std::cout << "aodbc_bit: " << alignof(aodbc::types::aodbc_bit) << std::endl;
-            std::cout << "aodbc_sbigint: "  << alignof(aodbc::types::aodbc_sbigint) << std::endl;
-            std::cout << "aodbc_ubigint: "  << alignof(aodbc::types::aodbc_ubigint) << std::endl;
-            std::cout << "aodbc_sint: "  << alignof(aodbc::types::aodbc_sint) << std::endl;
-            std::cout << "aodbc_uint: "  << alignof(aodbc::types::aodbc_uint) << std::endl;
-            std::cout << "aodbc_sshort: "  << alignof(aodbc::types::aodbc_sshort) << std::endl;
-            std::cout << "aodbc_ushort: "  << alignof(aodbc::types::aodbc_ushort) << std::endl;
-            std::cout << "aodbc_stinyint: "  << alignof(aodbc::types::aodbc_stinyint) << std::endl;
-            std::cout << "aodbc_utinyint: "  << alignof(aodbc::types::aodbc_utinyint) << std::endl;
-            std::cout << "aodbc_varchar: "  << alignof(aodbc::types::aodbc_varchar) << std::endl;
-            std::cout << "aodbc_nvarchar: "  << alignof(aodbc::types::aodbc_nvarchar) << std::endl;
-            std::cout << "aodbc_float: "  << alignof(aodbc::types::aodbc_float) << std::endl;
-            std::cout << "aodbc_double: "  << alignof(aodbc::types::aodbc_double) << std::endl;
-            std::cout << "aodbc_date: "  << alignof(aodbc::types::aodbc_date) << std::endl;
-            std::cout << "aodbc_date: "  << alignof(aodbc::types::aodbc_date) << std::endl;
-            std::cout << "aodbc_time: "  << alignof(aodbc::types::aodbc_time) << std::endl;
-            std::cout << "aodbc_timestamp: "  << alignof(aodbc::types::aodbc_timestamp) << std::endl;
-            std::cout << "aodbc_decimal: "  << alignof(aodbc::types::aodbc_decimal) << std::endl;
-            std::cout << "aodbc_binary: "  << alignof(aodbc::types::aodbc_binary) << std::endl;
-            std::cout << "types_variant: " << alignof(aodbc::types::types_variant) << std::endl;
-        }
-    }
+                                        aodbc_binary >;
 
 }   // namespace aodbc::types

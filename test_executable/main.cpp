@@ -2,7 +2,10 @@
 // Created by ahodges on 03/10/2020.
 //
 
-#include "aodbc.hpp"
+
+#include "result_set_test.hpp"
+#include "basic_test.hpp"
+
 
 int main(int argc, char *argv[])
 {
@@ -15,26 +18,20 @@ int main(int argc, char *argv[])
             exit(-1);
         }
 
-        auto &env = aodbc::environment::get_singleton();
-        env.init();
+        auto conn_str = std::string(argv[1]);
 
-        {
-            aodbc::log_debug("creating connection..");
-            auto connection = aodbc::connection(env.get_env(), std::string(argv[1]));
-            connection.connect();
-            assert(connection.connected());
-            connection.disconnect();
-        }
-        aodbc::log_debug("connection closed and deleted");
+        auto test1 = basic_test();
+        test1.start(conn_str);
 
 
+        auto test2 = result_set_test();
+        test2.start(conn_str);
 
     }
-    catch (std::exception & ex)
+    catch (std::exception &ex)
     {
         aodbc::log_fatal(ex.what());
     }
-
 
     return 0;
 }

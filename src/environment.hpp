@@ -5,8 +5,10 @@
 #pragma once
 
 #include "config.hpp"
+#include "handles.hpp"
 #include "log.hpp"
 #include "sql_function_wrappers.hpp"
+#include "connection.hpp"
 
 namespace aodbc
 {
@@ -22,54 +24,29 @@ namespace aodbc
     {
         environment() noexcept
         : initialised_(false)
-        , handle_env(SQL_NULL_HANDLE)
         {
         }
 
-        static environment &get_singleton() { return detail::get_singleton(); }
-
-        bool init()
+        void init()
         {
-            if (valid())
-            {
-                // log that user is trying to init env twice
-                log_warning("WARNING: attempting to init the environment twice");
-                return false;
-            }
-
-            // Allocate handle_env
-            sql_alloc_env(&handle_env);
-
             // Set env attributes
-            sql_set_env_attr(&handle_env, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0);
+            sql_set_env_attr(env_.get_handle(), SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0);
             initialised_ = true;
-            return true;
         }
 
-        ~environment()
+        connection create_connection(std::string connection_str)
         {
-            if (valid())
-            {
-                sql_dealloc_env(&handle_env);
-            }
+            return connection(get_env(),std::move(connection_str));
         }
 
-        [[nodiscard]] bool     valid() const { return handle_env; }
-        [[nodiscard]] SQLHENV *get_env()
-        {
-            assert(initialised_);
-            return &handle_env;
-        }
+        [[nodiscard]] handles::env_handle &get_env() { return env_; }
+        [[nodiscard]] bool                 initialised() const { return initialised_; }
 
       private:
-        bool    initialised_;
-        SQLHENV handle_env;
+        bool                initialised_;
+        handles::env_handle env_;
 
-    } singleton = {};
+    };
 
-    namespace detail
-    {
-        environment &get_singleton() { return singleton; }
-    }   // namespace detail
 
 }   // namespace aodbc

@@ -5,6 +5,8 @@
 #pragma once
 
 #include "config.hpp"
+#include "handles.hpp"
+#include "sql_function_wrappers.hpp"
 
 namespace aodbc
 {
@@ -16,36 +18,22 @@ namespace aodbc
         friend struct statement;
         friend struct result_set;
 
-        bool valid() const { return handle_stmt_ != SQL_NULL_HANDLE; }
+        statement_base(handles::dbc_handle &dbc)
+        : stmt_(dbc)
+        {
+        }
 
-        auto get_max_rows() -> SQLULEN { return sql_get_max_rows(&handle_stmt_); }
-        auto set_max_rows(SQLULEN max_rows) -> void { sql_set_max_rows(&handle_stmt_, max_rows); }
+        auto get_max_rows() -> SQLULEN { return sql_get_max_rows(stmt_.get_handle()); }
+        auto set_max_rows(SQLULEN max_rows) -> void { sql_set_max_rows(stmt_.get_handle(), max_rows); }
 
-        auto get_query_timeout() -> SQLULEN { return sql_get_query_timeout(&handle_stmt_); }
-        auto set_query_timeout(SQLULEN seconds) -> void { sql_set_query_timeout(&handle_stmt_, seconds); }
-
-
+        auto get_query_timeout() -> SQLULEN { return sql_get_query_timeout(stmt_.get_handle()); }
+        auto set_query_timeout(SQLULEN seconds) -> void { sql_set_query_timeout(stmt_.get_handle(), seconds); }
 
       protected:
-        SQLHSTMT *get_handle() { return &handle_stmt_; }
-        auto free_stmt_close() -> void { sql_free_stmt(&handle_stmt_, SQL_CLOSE); }
+        handles::stmt_handle &get_stmt() { return stmt_; }
+        auto                  free_stmt_close() -> void { sql_free_stmt(stmt_.get_handle(), SQL_CLOSE); }
 
       private:
-        statement_base()
-        : handle_stmt_(SQL_NULL_HANDLE)
-        {
-        }
-
-        ~statement_base()
-        {
-            if (valid())
-            {
-                sql_dealloc_stmt(&handle_stmt_);
-                handle_stmt_ = SQL_NULL_HANDLE;
-            }
-        }
-
-      private:
-        SQLHSTMT handle_stmt_;
+        handles::stmt_handle stmt_;
     };
 }   // namespace aodbc

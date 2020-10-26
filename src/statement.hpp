@@ -16,8 +16,8 @@ namespace aodbc
     {
         friend struct connection;
 
-        statement()
-        : statement_base()
+        statement(handles::dbc_handle & dbc)
+        : statement_base(dbc)
         {
         }
 
@@ -27,13 +27,12 @@ namespace aodbc
         /// @return Quantity of affected rows, -1 if none.
         SQLLEN execute(std::string &sql_statement)
         {
-            assert(valid());
             // execute the query
-            sql_exec_direct(&handle_stmt_, sql_statement);
+            sql_exec_direct(stmt_.get_handle(), sql_statement);
 
             // get effected rows
             SQLLEN row_count;
-            sql_row_count(&handle_stmt_,&row_count);
+            sql_row_count(stmt_.get_handle(),&row_count);
             return row_count;
         }
 
@@ -43,8 +42,8 @@ namespace aodbc
         result_set execute_query(std::string &sql_statement)
         {
             free_stmt_close(); // Close any existing cursor
-            sql_exec_direct(&handle_stmt_,sql_statement);
-            return result_set(*this);
+            sql_exec_direct(stmt_.get_handle(),sql_statement);
+            return result_set(stmt_);
         }
 
     };
