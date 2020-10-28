@@ -29,9 +29,9 @@ namespace aodbc::sync
       public:   // startup/shutdown
         void connect(std::string &connection_str)
         {
+            assert(not connected());
             // connect to the driver
             sql_driver_connect(dbc_.get_handle(), connection_str);
-            log_info("Connected driver");
             connected_ = true;
         }
         void disconnect()
