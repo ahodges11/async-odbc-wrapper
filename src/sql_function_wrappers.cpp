@@ -170,13 +170,13 @@ namespace aodbc
                          SQLSetStmtAttr(handle_stmt, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)row_size, SQL_IS_UINTEGER));
     }
 
-
     SQLLEN sql_get_row_size(SQLHSTMT &handle_stmt)
     {
         SQLLEN result;
-        handle_odbc_call(handle_stmt,
-                         SQL_HANDLE_STMT,
-                         SQLGetStmtAttr(handle_stmt, SQL_ATTR_ROW_ARRAY_SIZE, reinterpret_cast<SQLPOINTER>(&result), 0, nullptr));
+        handle_odbc_call(
+            handle_stmt,
+            SQL_HANDLE_STMT,
+            SQLGetStmtAttr(handle_stmt, SQL_ATTR_ROW_ARRAY_SIZE, reinterpret_cast< SQLPOINTER >(&result), 0, nullptr));
         return result;
     }
 
