@@ -8,17 +8,9 @@
 #include "handles.hpp"
 #include "log.hpp"
 #include "sql_function_wrappers.hpp"
-#include "connection.hpp"
 
 namespace aodbc
 {
-    // forward declare
-    struct environment;
-    namespace detail
-    {
-        environment &get_singleton();
-    }
-
     // define
     struct environment
     {
@@ -34,19 +26,22 @@ namespace aodbc
             initialised_ = true;
         }
 
-        connection create_connection(std::string connection_str)
-        {
-            return connection(get_env(),std::move(connection_str));
-        }
-
         [[nodiscard]] handles::env_handle &get_env() { return env_; }
         [[nodiscard]] bool                 initialised() const { return initialised_; }
 
       private:
         bool                initialised_;
         handles::env_handle env_;
-
     };
 
+    environment &get_default_env()
+    {
+        static environment env;
+        if (not env.initialised())
+        {
+            env.init();
+        }
+        return env;
+    }
 
 }   // namespace aodbc

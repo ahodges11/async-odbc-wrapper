@@ -11,7 +11,7 @@
 
 namespace aodbc::handles
 {
-    struct impl_type : std::enable_shared_from_this< impl_type >
+    struct impl_type
     {
         impl_type(SQL_handle_type type, std::shared_ptr< impl_type > parent)
         : handle_(SQL_NULL_HANDLE)

@@ -3,8 +3,8 @@
 //
 
 
-#include "result_set_test.hpp"
-#include "basic_test.hpp"
+
+#include "simple_interface_test.hpp"
 
 
 int main(int argc, char *argv[])
@@ -20,12 +20,9 @@ int main(int argc, char *argv[])
 
         auto conn_str = std::string(argv[1]);
 
-        auto test1 = basic_test();
+        auto test1 = simple_interface_test();
         test1.start(conn_str);
 
-
-        auto test2 = result_set_test();
-        test2.start(conn_str);
 
     }
     catch (std::exception &ex)

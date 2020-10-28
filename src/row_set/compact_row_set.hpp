@@ -2,9 +2,11 @@
 // Created by ahodges on 06/10/2020.
 //
 
+
+/*
 #pragma once
 
-#include "row_set_base.hpp"
+
 
 #include <cstdint>
 #include <memory>
@@ -114,3 +116,4 @@ namespace aodbc::row_set
     };
 
 }   // namespace aodbc::row_set
+*/

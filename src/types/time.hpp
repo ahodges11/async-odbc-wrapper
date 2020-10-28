@@ -21,9 +21,14 @@ namespace aodbc::types
         {
         }
 
-        std::uint16_t hour() const {return hour_;}
-        std::uint16_t minute() const {return minute_;}
-        std::uint16_t second() const {return second_;}
+        std::uint16_t hour() const { return hour_; }
+        std::uint16_t minute() const { return minute_; }
+        std::uint16_t second() const { return second_; }
+
+        bool operator==(const time &other) const
+        {
+            return hour_ == other.hour_ && minute_ == other.minute_ && second_ == other.second_;
+        }
 
       private:
         std::uint16_t hour_;

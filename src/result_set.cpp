@@ -2,6 +2,8 @@
 // Created by ahodges on 06/10/2020.
 //
 
+/*
+
 #include "result_set.hpp"
 
 #include "sql_function_wrappers.hpp"
@@ -14,21 +16,7 @@
 
 namespace aodbc
 {
-    template < typename value_type >
-    types::types_variant result_set::get(std::uint16_t column_index)
-    {
-        auto       result = types::types_variant();
-        value_type tmp;
-        SQLLEN     ind;
-        handle_odbc_call(
-            stmt_.get_handle(),
-            SQL_HANDLE_STMT,
-            SQLGetData(
-                stmt_.get_handle(), column_index, types::type_to_sql_ident< value_type >(), &tmp, sizeof(tmp), &ind));
-        return_if_null(ind);
-        result.emplace< value_type >(tmp);
-        return result;
-    }
+
 
     template <>
     types::types_variant result_set::get< types::aodbc_decimal >(std::uint16_t column_index)
@@ -230,31 +218,26 @@ namespace aodbc
         return result;
     }
 
-    /*
-    template <>   // TODO
-    types::types_variant get< types::aodbc_nvarchar >(std::uint16_t column_index)
-    {
-        auto result = types::types_variant();
-        return result;
-    }
-    */
 
-    // implicit generation declarations for the linker
-    template types::types_variant result_set::get< types::aodbc_bit >(std::uint16_t);
 
-    template types::types_variant result_set::get< types::aodbc_sbigint >(std::uint16_t);
-    template types::types_variant result_set::get< types::aodbc_ubigint >(std::uint16_t);
+// implicit generation declarations for the linker
+template types::types_variant result_set::get< types::aodbc_bit >(std::uint16_t);
 
-    template types::types_variant result_set::get< types::aodbc_sint >(std::uint16_t);
-    template types::types_variant result_set::get< types::aodbc_uint >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_sbigint >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_ubigint >(std::uint16_t);
 
-    template types::types_variant result_set::get< types::aodbc_sshort >(std::uint16_t);
-    template types::types_variant result_set::get< types::aodbc_ushort >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_sint >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_uint >(std::uint16_t);
 
-    template types::types_variant result_set::get< types::aodbc_stinyint >(std::uint16_t);
-    template types::types_variant result_set::get< types::aodbc_utinyint >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_sshort >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_ushort >(std::uint16_t);
 
-    template types::types_variant result_set::get< types::aodbc_float >(std::uint16_t);
-    template types::types_variant result_set::get< types::aodbc_double >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_stinyint >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_utinyint >(std::uint16_t);
+
+template types::types_variant result_set::get< types::aodbc_float >(std::uint16_t);
+template types::types_variant result_set::get< types::aodbc_double >(std::uint16_t);
 
 }   // namespace aodbc
+
+*/

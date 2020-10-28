@@ -11,6 +11,8 @@ namespace aodbc::types
     template < typename T >
     struct nullable
     {
+        using type = T;
+
       public:   // constructors
         nullable()
         : val_()
