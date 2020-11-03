@@ -4,6 +4,8 @@
 
 #include "sql_function_wrappers.hpp"
 
+#include <string>
+
 namespace aodbc
 {
     void handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode)

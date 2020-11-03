@@ -34,7 +34,7 @@ namespace aodbc
         handles::env_handle env_;
     };
 
-    environment &get_default_env()
+    inline environment &get_default_env()
     {
         static environment env;
         if (not env.initialised())

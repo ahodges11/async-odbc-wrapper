@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include "handles.hpp"
 #include "sql_function_wrappers.hpp"
+
+#include <memory>
 
 namespace aodbc
 {
@@ -16,8 +19,8 @@ namespace aodbc
         }
 
         // Default attributes
-        static std::size_t DEFAULT_TIMEOUT;
-        static std::size_t DEFAULT_MAX_ROWS;
+        static const std::size_t DEFAULT_TIMEOUT = 0;
+        static const std::size_t DEFAULT_MAX_ROWS = 0;
 
         /// @brief Executes the provided sql_statement
         /// @param sql_statement The sql_statement
@@ -59,6 +62,4 @@ namespace aodbc
         handles::stmt_handle stmt_;
     };
 
-    std::size_t statement::DEFAULT_MAX_ROWS = 0;
-    std::size_t statement::DEFAULT_TIMEOUT  = 0;
 }   // namespace aodbc

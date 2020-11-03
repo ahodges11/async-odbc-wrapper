@@ -1,28 +1,32 @@
 //
-// Created by ahodges on 26/10/2020.
+// Created by ahodges on 03/11/2020.
 //
 
-#pragma once
-
 #include "aodbc.hpp"
+#include "sync/result_set/standard_result_set.hpp"
+
+#include <catch2/catch.hpp>
+#include "arguments.hpp"
 
 struct simple_interface_test
 {
-    void start(std::string connection_str)
+    void start(std::string conn_str)
     {
         auto connection = aodbc::sync::connection();
-        connection.connect(connection_str);
+        connection.connect(conn_str);
         assert(connection.connected());
 
         {
             // Execute sql
             auto sql     = std::string("select * from testing_more;");
-            auto res_set = connection.execute_query< aodbc::result_set::standard_result_set >(sql);
-            res_set->next();   // Increment the cursor
+            auto res_set = connection.execute_query< aodbc::sync::result_set::standard_result_set >(sql);
+            auto results = res_set->next();   // Increment the cursor
+
+            assert(results);
 
             auto throw_if_false = [](bool condition) {
-                if (not condition)
-                    throw std::runtime_error("condition is false");
+              if (not condition)
+                  throw std::runtime_error("condition is false");
             };
 
             // Check the column types
@@ -80,3 +84,13 @@ struct simple_interface_test
         connection.disconnect();   // this deallocs the statement handle in res_set automatically.
     }
 };
+
+
+TEST_CASE("sync simple query")
+{
+    SECTION("1 connection - 1 query")
+    {
+        auto test = simple_interface_test();
+        test.start(connection_str);
+    }
+}

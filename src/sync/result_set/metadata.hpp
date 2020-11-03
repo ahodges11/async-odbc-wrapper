@@ -8,14 +8,15 @@
 #include "handles.hpp"
 #include "types/types.hpp"
 #include <log.hpp>
+#include <unordered_map>
 
 #include <vector>
 
-namespace aodbc::result_set
+namespace aodbc::sync::result_set
 {
     namespace detail
     {
-        SQLSMALLINT get_column_count(handles::stmt_handle &stmt)
+        inline SQLSMALLINT get_column_count(handles::stmt_handle &stmt)
         {
             SQLSMALLINT result;
             handle_odbc_call(stmt.get_handle(), SQL_HANDLE_STMT, SQLNumResultCols(stmt.get_handle(), &result));

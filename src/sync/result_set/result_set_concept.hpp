@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace aodbc::result_set
+namespace aodbc::sync::result_set
 {
 
     struct result_set_concept

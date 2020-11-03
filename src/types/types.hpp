@@ -11,6 +11,7 @@
 #include "types/nullable.hpp"
 #include "types/time.hpp"
 #include "types/timestamp.hpp"
+#include "handles.hpp"
 
 #include <iostream>
 #include <tuple>
@@ -92,7 +93,7 @@ namespace aodbc::types
         }
     }
 
-    aodbc_bit get_bit(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_bit get_bit(handles::stmt_handle &stmt, std::size_t column_index)
     {
         bool   tmp;
         SQLLEN ind;
@@ -103,7 +104,7 @@ namespace aodbc::types
             return aodbc_bit();
         return aodbc_bit(tmp);
     }
-    aodbc_bigint get_bigint(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_bigint get_bigint(handles::stmt_handle &stmt, std::size_t column_index)
     {
         std::int64_t tmp;
         SQLLEN       ind;
@@ -114,7 +115,7 @@ namespace aodbc::types
             return aodbc_bigint();
         return aodbc_bigint(tmp);
     }
-    aodbc_int get_int(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_int get_int(handles::stmt_handle &stmt, std::size_t column_index)
     {
         std::int32_t tmp;
         SQLLEN       ind;
@@ -125,7 +126,7 @@ namespace aodbc::types
             return aodbc_int();
         return aodbc_int(tmp);
     }
-    aodbc_short get_short(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_short get_short(handles::stmt_handle &stmt, std::size_t column_index)
     {
         std::int16_t tmp;
         SQLLEN       ind;
@@ -136,7 +137,7 @@ namespace aodbc::types
             return aodbc_short();
         return aodbc_short(tmp);
     }
-    aodbc_tinyint get_tinyint(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_tinyint get_tinyint(handles::stmt_handle &stmt, std::size_t column_index)
     {
         std::int8_t tmp;
         SQLLEN      ind;
@@ -147,7 +148,7 @@ namespace aodbc::types
             return aodbc_tinyint();
         return aodbc_tinyint(tmp);
     }
-    aodbc_float get_float(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_float get_float(handles::stmt_handle &stmt, std::size_t column_index)
     {
         float  tmp;
         SQLLEN ind;
@@ -158,7 +159,7 @@ namespace aodbc::types
             return aodbc_float();
         return aodbc_float(tmp);
     }
-    aodbc_double get_double(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_double get_double(handles::stmt_handle &stmt, std::size_t column_index)
     {
         double tmp;
         SQLLEN ind;
@@ -169,7 +170,7 @@ namespace aodbc::types
             return aodbc_double();
         return aodbc_double(tmp);
     }
-    aodbc_varchar get_varchar(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_varchar get_varchar(handles::stmt_handle &stmt, std::size_t column_index)
     {
         SQLRETURN retcode;
         SQLLEN    ind;
@@ -212,11 +213,11 @@ namespace aodbc::types
 
         return aodbc_varchar(std::move(tmp_str));
     }
-    aodbc_nvarchar get_nvarchar(handles::stmt_handle &, std::size_t)
+    inline aodbc_nvarchar get_nvarchar(handles::stmt_handle &, std::size_t)
     {
         throw std::runtime_error("get_nvarchar is not implemented");
     }
-    aodbc_binary get_binary(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_binary get_binary(handles::stmt_handle &stmt, std::size_t column_index)
     {
         SQLRETURN retcode;
         SQLLEN    ind;
@@ -255,7 +256,7 @@ namespace aodbc::types
         }
         return aodbc_binary(std::move(tmp_bin));
     }
-    aodbc_date get_date(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_date get_date(handles::stmt_handle &stmt, std::size_t column_index)
     {
         DATE_STRUCT date_struct;
         SQLLEN      ind;
@@ -268,7 +269,7 @@ namespace aodbc::types
             return aodbc_date();
         return aodbc_date(types::date(date_struct.year, date_struct.month, date_struct.day));
     }
-    aodbc_time get_time(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_time get_time(handles::stmt_handle &stmt, std::size_t column_index)
     {
         TIME_STRUCT time_struct;
         SQLLEN      ind;
@@ -280,7 +281,7 @@ namespace aodbc::types
             return aodbc_time();
         return aodbc_time(types::time(time_struct.hour, time_struct.minute, time_struct.second));
     }
-    aodbc_timestamp get_timestamp(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_timestamp get_timestamp(handles::stmt_handle &stmt, std::size_t column_index)
     {
         TIMESTAMP_STRUCT timestamp_struct;
         SQLLEN           ind;
@@ -300,7 +301,7 @@ namespace aodbc::types
                                                 timestamp_struct.second,
                                                 timestamp_struct.fraction));
     }
-    aodbc_decimal get_decimal(handles::stmt_handle &stmt, std::size_t column_index)
+    inline aodbc_decimal get_decimal(handles::stmt_handle &stmt, std::size_t column_index)
     {
         types::decimal numeric_struct = {};
         SQLLEN         ind;

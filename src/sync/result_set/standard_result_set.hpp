@@ -8,9 +8,9 @@
 #include "metadata.hpp"
 #include "result_set_concept.hpp"
 
-namespace aodbc::result_set
+namespace aodbc::sync::result_set
 {
-    struct standard_result_set : result_set_concept
+    struct standard_result_set final : result_set_concept
     {
         standard_result_set(handles::stmt_handle &stmt)
         : stmt_(stmt)
@@ -62,10 +62,11 @@ namespace aodbc::result_set
         }
 
         std::size_t key_to_column_index(const std::string &key) { return metadata_.key_to_column_index(key); }
+        const sync::result_set::result_set_metadata &get_metadata() { return metadata_; }
 
       private:
         handles::stmt_handle stmt_;
         result_set_metadata  metadata_;
     };
 
-}   // namespace aodbc::result_set
+}   // namespace aodbc::sync::result_set
