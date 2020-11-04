@@ -87,11 +87,16 @@ namespace aodbc::sync::result_set
         }
 
         const std::vector< column_metadata > &get_column_metadata() const { return column_metadata_; }
+        const column_metadata & get_col(std::size_t column_number) const
+        {
+            assert(column_number < column_metadata_.size());
+            return column_metadata_[column_number-1];
+        }
 
         bool column_is_type(std::size_t column_index, SQLSMALLINT c_type_ident)
         {
-            assert(column_index-1 < column_metadata_.size());
-            return column_metadata_[column_index-1].sql_type_ident() == c_type_ident;
+            assert(column_index <= column_metadata_.size());
+            return column_metadata_[column_index].sql_type_ident() == c_type_ident;
         }
 
         std::size_t key_to_column_index(const std::string & key) const {
@@ -100,6 +105,7 @@ namespace aodbc::sync::result_set
                 throw std::runtime_error("key not valid in result_set");
             return ifind->second;
         }
+
 
       private:
         std::vector< column_metadata >                 column_metadata_;
