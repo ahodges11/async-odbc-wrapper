@@ -4,35 +4,24 @@
 
 #pragma once
 #include <cstdint>
+#include <sqltypes.h>
+
+#include <tuple>
 
 namespace aodbc::types
 {
-    struct time
+    struct time : SQL_TIME_STRUCT
     {
-        time()
-        : time(0, 0, 0)
+        time(std::uint16_t hour = 0, std::uint16_t minute = 0, std::uint16_t second = 0)
+        : SQL_TIME_STRUCT { .hour = hour, .minute = minute, .second = second }
         {
         }
-
-        time(std::uint16_t hour, std::uint16_t minute, std::uint16_t second)
-        : hour_(hour)
-        , minute_(minute)
-        , second_(second)
-        {
-        }
-
-        std::uint16_t hour() const { return hour_; }
-        std::uint16_t minute() const { return minute_; }
-        std::uint16_t second() const { return second_; }
 
         bool operator==(const time &other) const
         {
-            return hour_ == other.hour_ && minute_ == other.minute_ && second_ == other.second_;
+            return std::tie(hour,minute,second) == std::tie(other.hour,other.minute,other.second);
         }
-
-      private:
-        std::uint16_t hour_;
-        std::uint16_t minute_;
-        std::uint16_t second_;
     };
+
+    static_assert(std::is_standard_layout_v< time >);
 }   // namespace aodbc::types

@@ -28,7 +28,18 @@ namespace aodbc::handles
             }
         }
 
-        ~impl_type() { sql_dealloc(handle_, type_); }
+        // TODO stop this ever throwing, which it does when deallocating the child when the parent has already been
+        // deallocated
+        ~impl_type()
+        {
+            try
+            {
+                sql_dealloc(handle_, type_);
+            }
+            catch (...)
+            {
+            }
+        }
 
         SQLHANDLE                    handle_;
         SQL_handle_type              type_;

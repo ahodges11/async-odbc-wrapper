@@ -3,10 +3,10 @@
 //
 
 #include "aodbc.hpp"
+#include "arguments.hpp"
 #include "sync/result_set/standard_result_set.hpp"
 
 #include <catch2/catch.hpp>
-#include "arguments.hpp"
 
 struct simple_interface_test
 {
@@ -22,27 +22,22 @@ struct simple_interface_test
             auto res_set = connection.execute_query< aodbc::sync::result_set::standard_result_set >(sql);
             auto results = res_set->next();   // Increment the cursor
 
-            assert(results);
-
-            auto throw_if_false = [](bool condition) {
-              if (not condition)
-                  throw std::runtime_error("condition is false");
-            };
+            CHECK(results);
 
             // Check the column types
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_bit >(1));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_bigint >(2));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_int >(3));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_short >(4));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_tinyint >(5));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_varchar >(6));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_varchar >(7));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_float >(8));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_double >(9));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_date >(10));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_time >(11));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_timestamp >(12));
-            throw_if_false(res_set->column_is_type< aodbc::types::aodbc_decimal >(13));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_bit >(1));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_bigint >(2));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_int >(3));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_short >(4));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_tinyint >(5));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_varchar >(6));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_varchar >(7));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_float >(8));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_double >(9));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_date >(10));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_time >(11));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_timestamp >(12));
+            CHECK(res_set->column_is_type< aodbc::types::aodbc_decimal >(13));
 
             // Get the results
             auto bool_column          = res_set->get_bit(1);
@@ -58,24 +53,31 @@ struct simple_interface_test
             auto time_column          = res_set->get_time(11);
             auto datetime_column      = res_set->get_timestamp(12);
             auto decimal_column       = res_set->get_decimal(13);
+            boost::ignore_unused(decimal_column);
 
-            throw_if_false(*bool_column);
-            throw_if_false(*bigint_column == 2);
-            throw_if_false(*int_column == 3);
-            throw_if_false(*smallint_column == 4);
-            throw_if_false(*tinyint_column == 5);
-            throw_if_false(*small_varchar_column == "small_vchar");
-            throw_if_false(*large_varchar_column == "this is a much larger vchar, SPACE SPACE SPACE SPACE SPACE SPACE "
-                                                    "SPACE SPACE SPACE SPACE SPACE SPACE SPACE SPACE SPACE ");
-            throw_if_false(trunc(*float_column * 1000000.) == trunc(3.141592 * 1000000.));
-            throw_if_false(trunc(*double_column * 1000000000000000.) == trunc(3.141592653589793 * 1000000000000000.));
+            CHECK(*bool_column);
+            CHECK(*bigint_column == 2);
+            CHECK(*int_column == 3);
+            CHECK(*smallint_column == 4);
+            CHECK(*tinyint_column == 5);
+            CHECK(*small_varchar_column == "small_vchar");
+            CHECK(*large_varchar_column == "this is a much larger vchar, SPACE SPACE SPACE SPACE SPACE SPACE "
+                                           "SPACE SPACE SPACE SPACE SPACE SPACE SPACE SPACE SPACE ");
+            CHECK(trunc(*float_column * 1000000.) == trunc(3.141592 * 1000000.));
+            CHECK(trunc(*double_column * 1000000000000000.) == trunc(3.141592653589793 * 1000000000000000.));
             auto expected_date = aodbc::types::date(1999, 11, 25);
-            throw_if_false(*date_column == expected_date);
+            CHECK(*date_column == expected_date);
             auto expected_time = aodbc::types::time(12, 0, 1);
-            throw_if_false(*time_column == expected_time);
-            auto expected_timestamp = aodbc::types::timestamp(expected_date, expected_time, 0);
-            throw_if_false(*datetime_column == expected_timestamp);
-            auto expected_decimal = aodbc::types::decimal();
+            CHECK(*time_column == expected_time);
+            auto expected_timestamp = aodbc::types::timestamp(expected_date.year,
+                                                              expected_date.month,
+                                                              expected_date.day,
+                                                              expected_time.hour,
+                                                              expected_time.minute,
+                                                              expected_time.second,
+                                                              0);
+            CHECK(*datetime_column == expected_timestamp);
+            // auto expected_decimal = aodbc::types::decimal();
             // TODO
             // expected_decimal.get_impl()
             // throw_if_false( == );
@@ -84,7 +86,6 @@ struct simple_interface_test
         connection.disconnect();   // this deallocs the statement handle in res_set automatically.
     }
 };
-
 
 TEST_CASE("sync simple query")
 {

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "handles.hpp"
 #include "sql.h"
 #include "sqlext.h"
 #include "types/date.hpp"
@@ -11,7 +12,6 @@
 #include "types/nullable.hpp"
 #include "types/time.hpp"
 #include "types/timestamp.hpp"
-#include "handles.hpp"
 
 #include <iostream>
 #include <tuple>
@@ -52,7 +52,91 @@ namespace aodbc::types
 
     typedef nullable< types::decimal > aodbc_decimal;
 
-    inline std::tuple< std::size_t, std::size_t > sqltype_to_c_size_and_alignment(int sqltype)
+    typedef nullable<std::string_view> aodbc_string_view;
+
+    inline std::tuple< std::size_t, std::size_t > sql_type_to_c_size_and_alignment(int sqltype)
+    {
+        switch (sqltype)
+        {
+        case SQL_BIT:
+            return std::make_tuple(sizeof(aodbc_bit::type), alignof(aodbc_bit::type));
+        case SQL_BIGINT:
+            return std::make_tuple(sizeof(aodbc_bigint::type), alignof(aodbc_bigint::type));
+        case SQL_INTEGER:
+            return std::make_tuple(sizeof(aodbc_int::type), alignof(aodbc_int::type));
+        case SQL_SMALLINT:
+            return std::make_tuple(sizeof(aodbc_short::type), alignof(aodbc_short::type));
+        case SQL_TINYINT:
+            return std::make_tuple(sizeof(aodbc_tinyint::type), alignof(aodbc_tinyint::type));
+        case SQL_REAL:   // TODO FLOAD AND DOUBLE
+            return std::make_tuple(sizeof(aodbc_float::type), alignof(aodbc_float::type));
+        case SQL_DOUBLE:
+            return std::make_tuple(sizeof(aodbc_double::type), alignof(aodbc_double::type));
+        case SQL_FLOAT:
+            return std::make_tuple(sizeof(aodbc_double::type), alignof(aodbc_double::type));
+        case SQL_CHAR:
+            return std::make_tuple(sizeof(char), alignof(char));
+        case SQL_VARCHAR:
+            return std::make_tuple(sizeof(char), alignof(char));
+        case SQL_WCHAR:
+            return std::make_tuple(sizeof(char16_t), alignof(char16_t));
+        case SQL_BINARY:
+            return std::make_tuple(sizeof(char), alignof(char));
+        case SQL_TYPE_DATE:
+            return std::make_tuple(sizeof(date), alignof(date));
+        case -154:   // SQL_TYPE_TIME incorrect?
+            return std::make_tuple(sizeof(time), alignof(time));
+        case SQL_TYPE_TIMESTAMP:
+            return std::make_tuple(sizeof(timestamp), alignof(timestamp));
+        case SQL_DECIMAL:
+            return std::make_tuple(sizeof(decimal), alignof(decimal));
+        default:
+            throw std::runtime_error("invalid type in sql_type_to_c_size_and_alignment.");
+        }
+    }
+
+    inline SQLSMALLINT sql_type_to_c_type(SQLSMALLINT sql_type)
+    {
+        switch (sql_type)
+        {
+        case SQL_BIT:
+            return SQL_C_BIT;
+        case SQL_BIGINT:
+            return SQL_C_SBIGINT;
+        case SQL_INTEGER:
+            return SQL_C_SLONG;
+        case SQL_SMALLINT:
+            return SQL_C_SSHORT;
+        case SQL_TINYINT:
+            return SQL_C_UTINYINT;
+        case SQL_REAL:   // TODO FLOAD AND DOUBLE
+            return SQL_C_FLOAT;
+        case SQL_DOUBLE:
+            return SQL_C_DOUBLE;
+        case SQL_FLOAT:
+            return SQL_C_DOUBLE;
+        case SQL_CHAR:
+            return SQL_C_CHAR;
+        case SQL_VARCHAR:
+            return SQL_C_CHAR;
+        case SQL_WCHAR:
+            return SQL_C_WCHAR;
+        case SQL_BINARY:
+            return SQL_C_BINARY;
+        case SQL_TYPE_DATE:
+            return SQL_C_TYPE_DATE;
+        case -154:   // SQL_TYPE_TIME incorrect?
+            return SQL_C_TYPE_TIME;
+        case SQL_TYPE_TIMESTAMP:
+            return SQL_C_TYPE_TIMESTAMP;
+        case SQL_DECIMAL:
+            return SQL_C_NUMERIC;
+        default:
+            throw std::runtime_error("invalid type in sqltype_to_cpp_size_and_alignment.");
+        }
+    }
+
+    inline std::tuple< std::size_t, std::size_t > sql_type_to_cpp_size_and_alignment(int sqltype)
     {
         switch (sqltype)
         {
@@ -89,7 +173,7 @@ namespace aodbc::types
         case SQL_DECIMAL:
             return std::make_tuple(sizeof(aodbc_decimal), alignof(aodbc_decimal));
         default:
-            throw std::runtime_error("invalid type in sqltype_to_c_alignment.");
+            throw std::runtime_error("invalid type in sqltype_to_cpp_size_and_alignment.");
         }
     }
 
@@ -258,7 +342,7 @@ namespace aodbc::types
     }
     inline aodbc_date get_date(handles::stmt_handle &stmt, std::size_t column_index)
     {
-        DATE_STRUCT date_struct;
+        date date_struct;
         SQLLEN      ind;
 
         handle_odbc_call(
@@ -267,11 +351,11 @@ namespace aodbc::types
             SQLGetData(stmt.get_handle(), column_index, SQL_C_DATE, &date_struct, sizeof(date_struct), &ind));
         if (ind == SQL_NULL_DATA)
             return aodbc_date();
-        return aodbc_date(types::date(date_struct.year, date_struct.month, date_struct.day));
+        return aodbc_date(date_struct);
     }
     inline aodbc_time get_time(handles::stmt_handle &stmt, std::size_t column_index)
     {
-        TIME_STRUCT time_struct;
+        time time_struct;
         SQLLEN      ind;
         handle_odbc_call(
             stmt.get_handle(),
@@ -279,11 +363,11 @@ namespace aodbc::types
             SQLGetData(stmt.get_handle(), column_index, SQL_C_TIME, &time_struct, sizeof(time_struct), &ind));
         if (ind == SQL_NULL_DATA)
             return aodbc_time();
-        return aodbc_time(types::time(time_struct.hour, time_struct.minute, time_struct.second));
+        return aodbc_time(time_struct);
     }
     inline aodbc_timestamp get_timestamp(handles::stmt_handle &stmt, std::size_t column_index)
     {
-        TIMESTAMP_STRUCT timestamp_struct;
+        timestamp timestamp_struct;
         SQLLEN           ind;
         handle_odbc_call(
             stmt.get_handle(),
@@ -293,17 +377,11 @@ namespace aodbc::types
         if (ind == SQL_NULL_DATA)
             return aodbc_timestamp();
 
-        return aodbc_timestamp(types::timestamp(timestamp_struct.year,
-                                                timestamp_struct.month,
-                                                timestamp_struct.day,
-                                                timestamp_struct.hour,
-                                                timestamp_struct.minute,
-                                                timestamp_struct.second,
-                                                timestamp_struct.fraction));
+        return aodbc_timestamp(timestamp_struct);
     }
     inline aodbc_decimal get_decimal(handles::stmt_handle &stmt, std::size_t column_index)
     {
-        types::decimal numeric_struct = {};
+        types::decimal numeric_struct;
         SQLLEN         ind;
 
         handle_odbc_call(stmt.get_handle(),
@@ -311,12 +389,12 @@ namespace aodbc::types
                          SQLGetData(stmt.get_handle(),
                                     column_index,
                                     SQL_C_NUMERIC,
-                                    numeric_struct.get_impl(),
-                                    sizeof(*numeric_struct.get_impl()),
+                                    std::addressof(numeric_struct),
+                                    sizeof(numeric_struct),
                                     &ind));
         if (ind == SQL_NULL_DATA)
             return aodbc_decimal();
-        return aodbc_decimal(std::move(numeric_struct));
+        return aodbc_decimal(numeric_struct);
     }
 
     /// C++ data type TO ODBC type identifier

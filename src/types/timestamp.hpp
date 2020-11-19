@@ -7,45 +7,37 @@
 #include "date.hpp"
 #include "time.hpp"
 
+#include <type_traits>
+#include <sqltypes.h>
+#include <tuple>
+
 namespace aodbc::types
 {
-    struct timestamp
-    : date
-    , time
+    struct timestamp : SQL_TIMESTAMP_STRUCT
     {
-        timestamp()
-        : timestamp(0, 1, 1, 0, 0, 0, 0)
+        timestamp(std::int16_t  year     = 0,
+                  std::uint16_t month    = 1,
+                  std::uint16_t day      = 1,
+                  std::uint16_t hour     = 0,
+                  std::uint16_t minute   = 0,
+                  std::uint16_t second   = 0,
+                  std::uint32_t fraction = 0)
+        : SQL_TIMESTAMP_STRUCT { .year     = year,
+                                 .month    = month,
+                                 .day      = day,
+                                 .hour     = hour,
+                                 .minute   = minute,
+                                 .second   = second,
+                                 .fraction = fraction }
         {
         }
-
-        timestamp(std::int16_t  year,
-                  std::uint16_t month,
-                  std::uint16_t day,
-                  std::uint16_t hour,
-                  std::uint16_t minute,
-                  std::uint16_t second,
-                  std::uint32_t fraction)
-        : date(year, month, day)
-        , time(hour, minute, second)
-        , fraction_(fraction)
-        {
-        }
-
-        timestamp(const date &datep, const time &timep, std::uint32_t fraction)
-        : date(datep)
-        , time(timep)
-        , fraction_(fraction)
-        {
-        }
-
-        std::uint32_t fraction() const { return fraction_; }
 
         bool operator==(const timestamp &other) const
         {
-            return date::operator==(other) && time::operator==(other) && fraction_ == other.fraction_;
+            return std::tie(year, month, day, hour, minute, second, fraction) ==
+                   std::tie(other.year, other.month, other.day, other.hour, other.minute, other.second, other.fraction);
         }
-
-      private:
-        std::uint32_t fraction_;
     };
+
+    static_assert(std::is_standard_layout_v<timestamp>);
 }   // namespace aodbc::types

@@ -169,7 +169,7 @@ namespace aodbc
     {
         handle_odbc_call(handle_stmt,
                          SQL_HANDLE_STMT,
-                         SQLSetStmtAttr(handle_stmt, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)row_size, SQL_IS_UINTEGER));
+                         SQLSetStmtAttr(handle_stmt, SQL_ATTR_MAX_ROWS, (SQLPOINTER)row_size, SQL_IS_UINTEGER));
     }
 
     SQLLEN sql_get_row_size(SQLHSTMT &handle_stmt)
@@ -178,8 +178,36 @@ namespace aodbc
         handle_odbc_call(
             handle_stmt,
             SQL_HANDLE_STMT,
-            SQLGetStmtAttr(handle_stmt, SQL_ATTR_ROW_ARRAY_SIZE, reinterpret_cast< SQLPOINTER >(&result), 0, nullptr));
+            SQLGetStmtAttr(handle_stmt, SQL_ATTR_MAX_ROWS, reinterpret_cast< SQLPOINTER >(&result), 0, nullptr));
         return result;
+    }
+    void sql_set_array_size(SQLHSTMT &handle_stmt, SQLULEN array_size)
+    {
+        handle_odbc_call(handle_stmt,
+                         SQL_HANDLE_STMT,
+                         SQLSetStmtAttr(handle_stmt,
+                                        SQL_ATTR_ROW_ARRAY_SIZE,
+                                        reinterpret_cast< SQLPOINTER >(static_cast< uintptr_t >(array_size)),
+                                        SQL_IS_UINTEGER));
+    }
+    void sql_fetch_scroll(SQLHSTMT &handle_stmt, SQLSMALLINT orientation, SQLROWOFFSET offset)
+    {
+        handle_odbc_call(handle_stmt, SQL_HANDLE_STMT, SQLFetchScroll(handle_stmt, orientation, offset));
+    }
+    void sql_set_row_status_ptr(SQLHSTMT &handle_stmt, SQLUSMALLINT *row_status)
+    {
+        handle_odbc_call(
+            handle_stmt, SQL_HANDLE_STMT, SQLSetStmtAttr(handle_stmt, SQL_ATTR_ROW_STATUS_PTR, row_status, 0));
+    }
+    void sql_set_rows_fetched_ptr(SQLHSTMT &handle_stmt, SQLROWSETSIZE *row_count)
+    {
+        handle_odbc_call(
+            handle_stmt, SQL_HANDLE_STMT, SQLSetStmtAttr(handle_stmt, SQL_ATTR_ROWS_FETCHED_PTR, row_count, 0));
+    }
+
+    void sql_bind_col(SQLHSTMT &handle_stmt, SQLUSMALLINT col_number, SQLSMALLINT col_type, SQLPOINTER data_ptr, SQLLEN buf_len, SQLLEN * indicator_ptr)
+    {
+        handle_odbc_call(handle_stmt, SQL_HANDLE_STMT, SQLBindCol(handle_stmt, col_number, col_type, data_ptr, buf_len, indicator_ptr));
     }
 
 }   // namespace aodbc

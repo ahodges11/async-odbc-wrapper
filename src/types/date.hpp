@@ -5,38 +5,24 @@
 #pragma once
 
 #include <cstdint>
+#include <sqltypes.h>
+#include <tuple>
+#include <type_traits>
 
 namespace aodbc::types
 {
-    struct date
+    struct date : SQL_DATE_STRUCT
     {
-        date()
-        : date(0, 1, 1)
+        date(std::int16_t year = 0, std::uint16_t month = 1, std::uint16_t day = 1)
+        : SQL_DATE_STRUCT { .year = year, .month = month, .day = day }
         {
         }
 
-        date(std::int16_t year, std::uint16_t month, std::uint16_t day)
-        : year_(year)
-        , month_(month)
-        , day_(day)
+        bool operator==(const date &other) const
         {
+            return std::tie(year, month, day) == std::tie(other.year, other.month, other.day);
         }
-
-        std::int16_t year() const {return year_;}
-        std::uint16_t month() const {return month_;}
-        std::uint16_t day() const {return day_;}
-
-        bool operator==(const date & other) const
-        {
-            if (year_ != other.year_ || month_ != other.month_ || day_ != other.day_)
-                return false;
-            else
-                return true;
-        }
-
-      private:
-        std::int16_t year_;
-        std::uint16_t month_;
-        std::uint16_t day_;
     };
+
+    static_assert(std::is_standard_layout_v< date >);
 }   // namespace aodbc::types

@@ -7,9 +7,9 @@
 #include "config.hpp"
 #include "handles.hpp"
 #include "types/types.hpp"
+
 #include <log.hpp>
 #include <unordered_map>
-
 #include <vector>
 
 namespace aodbc::sync::result_set
@@ -42,27 +42,37 @@ namespace aodbc::sync::result_set
                                             sizeof(name_buf),
                                             &name_len,
                                             &sql_type,
-                                            &byte_len,
+                                            &byte_len_,
                                             &decimal,
                                             &nullable));
             name_.append(name_buf, name_len);
         }
-
-        SQLUSMALLINT                                         number() const { return number_; }
-        [[nodiscard]] const std::string &                    name() const { return name_; }
-        [[nodiscard]] std::tuple< std::size_t, std::size_t > size_and_alignment() const
+        SQLSMALLINT to_c_type() const
         {
-            return types::sqltype_to_c_size_and_alignment(sql_type);
+            return types::sql_type_to_c_type(sql_type);
+        }
+
+        SQLUSMALLINT                     number() const { return number_; }
+        [[nodiscard]] const std::string &name() const { return name_; }
+        std::size_t                      byte_len() const { return byte_len_; }
+
+        [[nodiscard]] std::tuple< std::size_t, std::size_t > c_size_and_alignment() const
+        {
+            return types::sql_type_to_c_size_and_alignment(sql_type);
+        }
+        [[nodiscard]] std::tuple< std::size_t, std::size_t > cpp_size_and_alignment() const
+        {
+            return types::sql_type_to_cpp_size_and_alignment(sql_type);
         }
         SQLSMALLINT sql_type_ident() const { return sql_type; }
 
       private:
-        SQLUSMALLINT number_;    // Column number
-        std::string  name_;      // Column name
-        SQLSMALLINT  sql_type;   // SQL type
-        std::size_t  byte_len;   // Size of column
-        SQLSMALLINT  decimal;    // decimal digits / scale
-        SQLSMALLINT  nullable;   // column nullability
+        SQLUSMALLINT number_;     // Column number
+        std::string  name_;       // Column name
+        SQLSMALLINT  sql_type;    // SQL type
+        std::size_t  byte_len_;   // Size of column
+        SQLSMALLINT  decimal;     // decimal digits / scale
+        SQLSMALLINT  nullable;    // column nullability
     };
 
     struct result_set_metadata
@@ -87,28 +97,28 @@ namespace aodbc::sync::result_set
         }
 
         const std::vector< column_metadata > &get_column_metadata() const { return column_metadata_; }
-        const column_metadata & get_col(std::size_t column_number) const
+        const column_metadata &               get_col(std::size_t column_number) const
         {
-            assert(column_number < column_metadata_.size());
-            return column_metadata_[column_number-1];
+            assert(column_number <= column_metadata_.size());
+            return column_metadata_[column_number - 1];
         }
 
         bool column_is_type(std::size_t column_index, SQLSMALLINT c_type_ident)
         {
-            assert(column_index <= column_metadata_.size());
-            return column_metadata_[column_index].sql_type_ident() == c_type_ident;
+            assert(column_index-1 <= column_metadata_.size());
+            return column_metadata_[column_index-1].sql_type_ident() == c_type_ident;
         }
 
-        std::size_t key_to_column_index(const std::string & key) const {
+        std::size_t key_to_column_index(const std::string &key) const
+        {
             auto ifind = key_column_index_.find(key);
             if (ifind == std::end(key_column_index_))
                 throw std::runtime_error("key not valid in result_set");
             return ifind->second;
         }
 
-
       private:
         std::vector< column_metadata >                 column_metadata_;
         std::unordered_map< std::string, std::size_t > key_column_index_;   // column_names to column_index
     };
-}   // namespace aodbc::result_set
+}   // namespace aodbc::sync::result_set
