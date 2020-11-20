@@ -73,7 +73,7 @@ target_compile_definitions(aodbc-lib
 target_include_directories(aodbc-lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(aodbc-lib PUBLIC Boost::log Boost::thread Threads::Threads fmt::fmt spdlog::spdlog ${ODBC_LIBRARIES})
 target_compile_options(aodbc-lib PRIVATE -Werror -Wall -Wextra -pedantic)
-
+#target_compile_definitions(aodbc-lib PUBLIC BOOST_ASIO_ENABLE_HANDLER_TRACKING=0)
 
 add_executable(aodbc-lib-tests src/main.spec.cpp ${spec_files})
 target_link_libraries(aodbc-lib-tests PUBLIC aodbc-lib Catch2::Catch2)
@@ -90,3 +90,4 @@ list(FILTER tests_cpp_files EXCLUDE REGEX "^.*.\\.spec\\.[ch]pp$")
 
 add_executable(aodbc-tests tests/main.spec.cpp ${tests_spec_files})
 target_link_libraries(aodbc-tests PRIVATE aodbc-lib Catch2::Catch2)
+
