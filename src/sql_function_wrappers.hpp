@@ -8,12 +8,24 @@
 
 #include <sql.h>
 #include <sqlext.h>
+#include <string>
 
 namespace aodbc
 {
     typedef decltype(SQL_HANDLE_ENV) SQL_handle_type;
 
-    void handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode);
+    struct message
+    {
+        SQLINTEGER  error_number;
+        std::string text;
+        SQLCHAR     state[SQL_SQLSTATE_SIZE + 1];
+    };
+
+    void
+    handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, std::vector< message > *messages);
+    void handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type);
+    void
+    handle_odbc_call(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode, std::vector< message > *messages);
     void handle_odbc_call(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode);
 
     // --------------- ALLOC -----------------
@@ -30,6 +42,7 @@ namespace aodbc
     // --------------- DATABASE CONNECTION RELATED CALLS ---------------------
     void sql_alloc_dbc(SQLHENV &handle_env, SQLHDBC *handle_dbc);
     void sql_dealloc_dbc(SQLHDBC &handle_dbc);
+    void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages);
     void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str);
     void sql_driver_disconnect(SQLHDBC &handle_dbc);
 

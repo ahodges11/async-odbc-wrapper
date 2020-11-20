@@ -4,46 +4,123 @@
 
 #include "sql_function_wrappers.hpp"
 
+#include "log.hpp"
+
+#include <cassert>
+#include <iostream>
 #include <string>
+#include <vector>
 
 namespace aodbc
 {
-    void handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode)
+    namespace detail
     {
-        SQLSMALLINT record_num = 0;
-        SQLINTEGER  error_num;
-        SQLCHAR     message[1000];
-        SQLCHAR     state[SQL_SQLSTATE_SIZE + 1];
-
-        if (retcode == SQL_INVALID_HANDLE)
+        void handle_diagnostic_messages(SQLHANDLE &             handle,
+                                        SQLSMALLINT             handle_type,
+                                        std::vector< message > *messages)
         {
-            fwprintf(stderr, L"Invalid handle!\n");
-            return;
-        }
 
-        while (SQLGetDiagRec(handle_type,
-                             handle,
-                             ++record_num,
-                             state,
-                             &error_num,
-                             message,
-                             (SQLSMALLINT)(sizeof(message) / sizeof(WCHAR)),
-                             (SQLSMALLINT *)nullptr) == SQL_SUCCESS)
-        {
-            // TODO build type to transport this data
-            fwprintf(stderr, L"[%5.5s] %s (%d)\n", state, message, error_num);
+
+            if (messages == nullptr)
+                return;
+            else
+            {
+                SQLSMALLINT record_num = 0;
+                SQLINTEGER  error_num;
+                char        txt[1000];
+                SQLCHAR     state[SQL_SQLSTATE_SIZE + 1];
+
+                while (true)
+                {
+                    auto continue_code = SQLGetDiagRec(handle_type,
+                                                       handle,
+                                                       ++record_num,
+                                                       state,
+                                                       &error_num,
+                                                       reinterpret_cast< SQLCHAR * >(txt),
+                                                       (SQLSMALLINT)(sizeof(txt) / sizeof(WCHAR)),
+                                                       (SQLSMALLINT *)nullptr);
+                    if (continue_code != SQL_SUCCESS && continue_code != SQL_SUCCESS_WITH_INFO)
+                        return;
+                    message &msg     = messages->emplace_back();
+                    msg.error_number = error_num;
+                    std::copy(std::begin(state), std::end(state), msg.state);
+                    msg.text = txt;
+                }
+            }
         }
+        void handle_diagnostic_print(SQLHANDLE &handle, SQLSMALLINT handle_type)
+        {
+
+
+            SQLSMALLINT record_num = 0;
+            SQLINTEGER  error_num;
+            SQLCHAR     txt[1000];
+            SQLCHAR     state[SQL_SQLSTATE_SIZE + 1];
+
+            while (true)
+            {
+                auto continue_code = SQLGetDiagRec(handle_type,
+                                                   handle,
+                                                   ++record_num,
+                                                   state,
+                                                   &error_num,
+                                                   txt,
+                                                   (SQLSMALLINT)(sizeof(txt) / sizeof(WCHAR)),
+                                                   (SQLSMALLINT *)nullptr);
+                if (continue_code != SQL_SUCCESS && continue_code != SQL_SUCCESS_WITH_INFO)
+                    return;
+                // print
+                log_info(fmt::format("[{}]-[{}]: {}", state, error_num, txt).data());
+            }
+        }
+    }   // namespace detail
+
+    void
+    handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, std::vector< message > *messages)
+    {
+        detail::handle_diagnostic_messages(handle, handle_type, messages);
     }
+    void handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type)
+    {
+        detail::handle_diagnostic_print(handle, handle_type);
+    }
+
     void handle_odbc_call(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode)
     {
-        if (retcode == SQL_SUCCESS)
-            return;
-        handle_diagnostic(handle, handle_type, retcode);
-        if (retcode == SQL_SUCCESS_WITH_INFO)
-            return;
-        if ((retcode == SQL_ERROR) || (retcode == SQL_INVALID_HANDLE))
+
+        switch (retcode)
         {
-            throw aodbc_odbc_exception("error in: " + std::to_string(retcode));
+        case SQL_SUCCESS:
+            return;
+        case SQL_SUCCESS_WITH_INFO:
+            handle_diagnostic(handle, handle_type);
+            return;
+        case SQL_ERROR:
+            if (handle == nullptr)
+            {
+                throw std::runtime_error("nullptr handle returned");
+            }
+            handle_diagnostic(handle, handle_type);
+            return;
+        case SQL_INVALID_HANDLE:
+            throw aodbc_odbc_exception("Invalid handle");
+        }
+    }
+    void handle_odbc_call(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode, std::vector< message > *messages)
+    {
+        switch (retcode)
+        {
+        case SQL_SUCCESS:
+            return;
+        case SQL_SUCCESS_WITH_INFO:
+            handle_diagnostic(handle, handle_type, messages);
+            return;
+        case SQL_ERROR:
+            handle_diagnostic(handle, handle_type, messages);
+            return;
+        case SQL_INVALID_HANDLE:
+            throw aodbc_odbc_exception("Invalid handle");
         }
     }
 
@@ -83,6 +160,8 @@ namespace aodbc
     {
         handle_odbc_call(handle_dbc, SQL_HANDLE_DBC, SQLFreeHandle(SQL_HANDLE_DBC, &handle_dbc));
     }
+
+
     void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str)
     {
         handle_odbc_call(handle_dbc,
@@ -95,6 +174,20 @@ namespace aodbc
                                           0,
                                           nullptr,
                                           SQL_DRIVER_NOPROMPT));
+    }
+    void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages)
+    {
+        handle_odbc_call(handle_dbc,
+                         SQL_HANDLE_DBC,
+                         SQLDriverConnect(handle_dbc,
+                                          nullptr,
+                                          reinterpret_cast< unsigned char * >(in_conn_str.data()),
+                                          SQL_NTS,
+                                          nullptr,
+                                          0,
+                                          nullptr,
+                                          SQL_DRIVER_NOPROMPT),
+                         messages);
     }
     void sql_driver_disconnect(SQLHDBC &handle_dbc)
     {
@@ -205,9 +298,16 @@ namespace aodbc
             handle_stmt, SQL_HANDLE_STMT, SQLSetStmtAttr(handle_stmt, SQL_ATTR_ROWS_FETCHED_PTR, row_count, 0));
     }
 
-    void sql_bind_col(SQLHSTMT &handle_stmt, SQLUSMALLINT col_number, SQLSMALLINT col_type, SQLPOINTER data_ptr, SQLLEN buf_len, SQLLEN * indicator_ptr)
+    void sql_bind_col(SQLHSTMT &   handle_stmt,
+                      SQLUSMALLINT col_number,
+                      SQLSMALLINT  col_type,
+                      SQLPOINTER   data_ptr,
+                      SQLLEN       buf_len,
+                      SQLLEN *     indicator_ptr)
     {
-        handle_odbc_call(handle_stmt, SQL_HANDLE_STMT, SQLBindCol(handle_stmt, col_number, col_type, data_ptr, buf_len, indicator_ptr));
+        handle_odbc_call(handle_stmt,
+                         SQL_HANDLE_STMT,
+                         SQLBindCol(handle_stmt, col_number, col_type, data_ptr, buf_len, indicator_ptr));
     }
 
 }   // namespace aodbc
