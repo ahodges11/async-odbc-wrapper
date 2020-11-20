@@ -303,7 +303,7 @@ namespace aodbc::types
     }
     inline aodbc_binary get_binary(handles::stmt_handle &stmt, std::size_t column_index)
     {
-        SQLRETURN retcode;
+
         SQLLEN    ind;
         char      dummy;
         handle_odbc_call(stmt.get_handle(),
@@ -320,8 +320,8 @@ namespace aodbc::types
             char buffer[1024];
             for (;;)
             {
-                retcode = SQLGetData(stmt.get_handle(), column_index, SQL_C_BINARY, buffer, sizeof(buffer), &ind);
-                handle_diagnostic(stmt.get_handle(), SQL_HANDLE_STMT, retcode);
+                auto retcode = SQLGetData(stmt.get_handle(), column_index, SQL_C_BINARY, buffer, sizeof(buffer), &ind);
+                handle_odbc_call(stmt.get_handle(), SQL_HANDLE_STMT, retcode);
                 if (ind == SQL_NO_TOTAL)
                     tmp_bin.insert(tmp_bin.end(), buffer, buffer + sizeof(buffer));
                 else
