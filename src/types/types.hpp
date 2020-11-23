@@ -254,6 +254,18 @@ namespace aodbc::types
             return aodbc_double();
         return aodbc_double(tmp);
     }
+    inline aodbc_varchar get_varchar(handles::stmt_handle &stmt, std::size_t column_index, std::size_t str_length)
+    {
+        SQLRETURN retcode;
+        SQLLEN    ind;
+
+        auto result = aodbc_varchar("");
+        result->resize(str_length);
+        retcode = SQLGetData(stmt.get_handle(), column_index, SQL_C_CHAR, result->data(),str_length, &ind);
+        assert(retcode == SQL_SUCCESS);
+        result->resize(ind);
+        return result;
+    }
     inline aodbc_varchar get_varchar(handles::stmt_handle &stmt, std::size_t column_index)
     {
         SQLRETURN retcode;
@@ -270,32 +282,33 @@ namespace aodbc::types
         if (ind == 0)
             return aodbc_varchar("");
 
-        auto tmp_str = std::string();
+        auto result = aodbc_varchar("");
         if (ind == SQL_NO_TOTAL)
         {
-            char buffer[1024];
+            auto end_of_data_size = result->size();
+            result->resize(end_of_data_size + 1024);
             for (;;)
             {
-                retcode = SQLGetData(stmt.get_handle(), column_index, SQL_C_CHAR, buffer, sizeof(buffer), &ind);
+                retcode = SQLGetData(stmt.get_handle(), column_index, SQL_C_CHAR, result->data()+end_of_data_size, 1024, &ind);
                 handle_odbc_call(stmt.get_handle(), SQL_HANDLE_STMT, retcode);
                 std::size_t len =
-                    (ind == SQL_NO_TOTAL) ? sizeof(buffer) - 1 : std::min< std::size_t >(sizeof(buffer) - 1, ind);
-                tmp_str.append(buffer, len);
+                    (ind == SQL_NO_TOTAL) ? 1024 - 1 : std::min< std::size_t >(1024 - 1, ind);
+                result->resize(end_of_data_size+len);
                 if (retcode == SQL_SUCCESS)
                     break;
             }
         }
         else
         {
-            tmp_str.resize(ind + 1);
+            result->resize(ind + 1);
             handle_odbc_call(
                 stmt.get_handle(),
                 SQL_HANDLE_STMT,
-                SQLGetData(stmt.get_handle(), column_index, SQL_C_CHAR, &tmp_str[0], tmp_str.size(), &ind));
-            tmp_str.resize(ind);
+                SQLGetData(stmt.get_handle(), column_index, SQL_C_CHAR, &result->at(0), result->size(), &ind));
+            result->resize(ind);
         }
 
-        return aodbc_varchar(std::move(tmp_str));
+        return result;
     }
     inline aodbc_nvarchar get_nvarchar(handles::stmt_handle &, std::size_t)
     {
