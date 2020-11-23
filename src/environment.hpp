@@ -36,12 +36,15 @@ namespace aodbc
 
     inline environment &get_default_env()
     {
-        static environment env;
-        if (not env.initialised())
-        {
+        static auto env = [](){
+            auto env = environment();
             env.init();
-        }
+            return env;
+        }();
+        assert(env.initialised());
         return env;
     }
+
+
 
 }   // namespace aodbc
