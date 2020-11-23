@@ -19,16 +19,16 @@ namespace aodbc
         }
 
         // Default attributes
-        static const std::size_t DEFAULT_TIMEOUT = 0;
+        static const std::size_t DEFAULT_TIMEOUT  = 0;
         static const std::size_t DEFAULT_MAX_ROWS = 0;
 
         /// @brief Executes the provided sql_statement
         /// @param sql_statement The sql_statement
         /// @return Quantity of affected rows, -1 if none.
-        long execute(std::string &sql_statement)
+        long execute(std::string &sql_statement, std::vector<message> * messages=nullptr)
         {
             // execute the query
-            sql_exec_direct(stmt_.get_handle(), sql_statement);
+            sql_exec_direct(stmt_.get_handle(), sql_statement, messages);
 
             // get effected rows
             SQLLEN row_count;
@@ -37,10 +37,11 @@ namespace aodbc
         }
 
         template < typename ResultSet >
-        std::unique_ptr< ResultSet > execute_query(std::string &sql_statement)
+        std::unique_ptr< ResultSet > execute_query(std::string &           sql_statement,
+                                                   std::vector< message > *messages = nullptr)
         {
             free_stmt_close();   // Close any existing cursor
-            sql_exec_direct(stmt_.get_handle(), sql_statement);
+            sql_exec_direct(stmt_.get_handle(), sql_statement, messages);
             auto result_set = std::make_unique< ResultSet >(stmt_);
             result_set->init();
             return result_set;
