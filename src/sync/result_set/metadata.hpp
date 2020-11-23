@@ -105,7 +105,7 @@ namespace aodbc::sync::result_set
 
         bool column_is_type(std::size_t column_index, SQLSMALLINT c_type_ident)
         {
-            assert(column_index-1 <= column_metadata_.size());
+            assert(column_index <= column_metadata_.size());
             return column_metadata_[column_index-1].sql_type_ident() == c_type_ident;
         }
 

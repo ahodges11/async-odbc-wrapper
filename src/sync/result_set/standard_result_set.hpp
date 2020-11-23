@@ -25,12 +25,12 @@ namespace aodbc::sync::result_set
         }
 
         // Iterate the cursor to the next rowset
-        bool next()
+        bool next(std::vector<message> * messages= nullptr)
         {
             SQLRETURN rc = SQLFetch(stmt_.get_handle());
             if (rc == SQL_NO_DATA)
                 return false;
-            handle_diagnostic(stmt_.get_handle(), SQL_HANDLE_STMT, rc);
+            handle_diagnostic(stmt_.get_handle(), SQL_HANDLE_STMT, messages);
             return true;
         }
 
@@ -41,7 +41,16 @@ namespace aodbc::sync::result_set
         types::aodbc_tinyint  get_tinyint(std::size_t column_index) { return types::get_tinyint(stmt_, column_index); };
         types::aodbc_float    get_float(std::size_t column_index) { return types::get_float(stmt_, column_index); };
         types::aodbc_double   get_double(std::size_t column_index) { return types::get_double(stmt_, column_index); };
-        types::aodbc_varchar  get_varchar(std::size_t column_index) { return types::get_varchar(stmt_, column_index); };
+        types::aodbc_varchar  get_varchar(std::size_t column_index)
+        {
+
+            auto str_len = metadata_.get_col(column_index).byte_len() + 1;
+            if (str_len != 1)
+                return types::get_varchar(stmt_, column_index, str_len);
+            else
+                return types::get_varchar(stmt_, column_index);
+
+        };
         types::aodbc_nvarchar get_nvarchar(std::size_t column_index)
         {
             return types::get_nvarchar(stmt_, column_index);

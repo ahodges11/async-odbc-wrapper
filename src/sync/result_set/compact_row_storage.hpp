@@ -62,14 +62,13 @@ namespace aodbc::sync::result_set
             , prepared_(false)
             {
                 // generate column_info/indicator_info
-                std::size_t col_bytes_in = 0;
+                std::size_t col_bytes_in  = 0;
                 std::size_t ind_values_in = 0;
                 for (std::size_t x = 1; x <= metadata_.column_count(); x++)
                 {
                     auto column_size = metadata_.get_column_size(x);
-                    column_info.emplace_back(col_bytes_in,column_size);
+                    column_info.emplace_back(col_bytes_in, column_size);
                     col_bytes_in += column_size * CHUNK_SIZE;
-
 
                     indicator_info.emplace_back(ind_values_in);
                     ind_values_in += CHUNK_SIZE;
@@ -144,19 +143,19 @@ namespace aodbc::sync::result_set
 
                 // get value
                 auto [column_index, value_size] = column_info[column - 1];
-                auto column_ind = column_index;
-                auto value_si = value_size;
-                boost::ignore_unused(column_ind,value_si);
-                char *start_of_column           = data_.data() + column_index;
-                char *start_of_value            = start_of_column + ((row - 1) * value_size);
+                auto column_ind                 = column_index;
+                auto value_si                   = value_size;
+                boost::ignore_unused(column_ind, value_si);
+                char *start_of_column = data_.data() + column_index;
+                char *start_of_value  = start_of_column + ((row - 1) * value_size);
 
                 // get indicator
                 auto    begin_index         = indicator_info[column - 1];
                 SQLLEN *ind_start_of_column = indicators_.data() + begin_index;
                 SQLLEN *ind_start_of_value  = ind_start_of_column + (row - 1);
 
-                const void * val = reinterpret_cast< const void * >(start_of_value);
-                SQLLEN ind_val = *ind_start_of_value;
+                const void *val     = reinterpret_cast< const void * >(start_of_value);
+                SQLLEN      ind_val = *ind_start_of_value;
                 return std::make_tuple(val, ind_val);
             }
 
@@ -208,7 +207,8 @@ namespace aodbc::sync::result_set
     struct compact_row_storage
     {
         compact_row_storage(std::shared_ptr< compact_metadata > metadata)
-        : metadata_(std::move(metadata))
+        : row_count_(0)
+        , metadata_(std::move(metadata))
         , chunk_store_({ *metadata_ })
         , chunk_index_({ { 1, detail::compact_chunk::DEFAULT_CHUNK_SIZE, get_last_chunk() } })
         {
@@ -216,9 +216,8 @@ namespace aodbc::sync::result_set
 
         std::size_t row_count() const { return row_count_; }
 
-
-        /// @brief Prepares array buffers to store data. The buffer space prepared is not guaranteed to be `row_count` size.
-        /// Check the actual size prepared by calling `compact_array_pointers.row_count()`
+        /// @brief Prepares array buffers to store data. The buffer space prepared is not guaranteed to be `row_count`
+        /// size. Check the actual size prepared by calling `compact_array_pointers.row_count()`
         /// @param row_count The maximum quantity of rows to prepare
         /// @return `compact_array_pointers` The prepared buffers
         compact_array_pointers prepare(std::size_t row_count)
@@ -265,7 +264,7 @@ namespace aodbc::sync::result_set
             assert(column <= metadata_->column_count());
             auto [chunk, first_row] = find_chunk(row);
             assert(chunk != nullptr);
-            return chunk->get_value((row - first_row)+1, column);
+            return chunk->get_value((row - first_row) + 1, column);
         }
 
       private:
