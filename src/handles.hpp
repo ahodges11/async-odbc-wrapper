@@ -5,6 +5,7 @@
 #pragma once
 
 #include "config.hpp"
+#include "log.hpp"
 #include "sql_function_wrappers.hpp"
 
 #include <memory>
@@ -17,33 +18,75 @@ namespace aodbc::handles
         : handle_(SQL_NULL_HANDLE)
         , type_(type)
         , parent_(std::move(parent))
+        , children_dead_(false)
         {
             if (parent_)
             {
                 sql_alloc_parent(handle_, type_, &parent_->handle_);
+                switch (type)
+                {
+                case SQL_HANDLE_ENV:
+                    assert(handle_ != SQL_NULL_HENV);
+                    break;
+                case SQL_HANDLE_DBC:
+                    assert(handle_ != SQL_NULL_HDBC);
+                    break;
+                case SQL_HANDLE_STMT:
+                    assert(handle_ != SQL_NULL_HSTMT);
+                    break;
+                default:
+                    std::runtime_error("Invalid type of handle. 002");
+                }
             }
             else
             {
                 sql_alloc(handle_, type_);
+                switch (type)
+                {
+                case SQL_HANDLE_ENV:
+                    assert(handle_ != SQL_NULL_HENV);
+                    break;
+                case SQL_HANDLE_DBC:
+                    assert(handle_ != SQL_NULL_HDBC);
+                    break;
+                case SQL_HANDLE_STMT:
+                    assert(handle_ != SQL_NULL_HSTMT);
+                    break;
+                default:
+                    std::runtime_error("Invalid type of handle. 003");
+                }
             }
         }
+
+        /// @brief Check to see if the children of this object are dead or not.
+        bool children_dead() const
+        {
+            if (parent_)
+                return children_dead_ or parent_->children_dead();
+            else
+                return children_dead_;
+        };
+
+        void mark_children_dead() { children_dead_ = true; }
 
         // TODO stop this ever throwing, which it does when deallocating the child when the parent has already been
         // deallocated
         ~impl_type()
         {
-            try
+            if (parent_)
             {
-                sql_dealloc(handle_, type_);
+                if (parent_->children_dead())
+                {
+                    return;
+                }
             }
-            catch (...)
-            {
-            }
+            sql_dealloc(handle_, type_);
         }
 
         SQLHANDLE                    handle_;
         SQL_handle_type              type_;
         std::shared_ptr< impl_type > parent_;
+        bool                         children_dead_;
 
         // copy and move
         impl_type(const impl_type &other) = delete;   // Copy
