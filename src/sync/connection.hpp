@@ -7,6 +7,8 @@
 #include "environment.hpp"
 #include "statement.hpp"
 
+#include <boost/core/ignore_unused.hpp>
+
 namespace aodbc::sync
 {
     struct connection
@@ -15,6 +17,8 @@ namespace aodbc::sync
         : dbc_(env.get_env())
         , connected_(false)
         {
+            // make sure the handle got allocated correctly
+            assert(dbc_.get_handle() != SQL_NULL_HDBC);
         }
 
         ~connection()
@@ -27,17 +31,24 @@ namespace aodbc::sync
         }
 
       public:   // startup/shutdown
-        void connect(std::string &connection_str)
+        void connect(std::string connection_str)
         {
             assert(not connected());
             // connect to the driver
             sql_driver_connect(dbc_.get_handle(), connection_str);
             connected_ = true;
         }
+        void connect(std::string &connection_str, std::vector< message > *messages=nullptr)
+        {
+            assert(not connected());
+            sql_driver_connect(dbc_.get_handle(), connection_str, messages);
+            connected_ = true;
+        }
         void disconnect()
         {
             assert(connected());
             sql_driver_disconnect(dbc_.get_handle());
+            dbc_.get_self()->mark_children_dead();
             connected_ = false;
         }
 
@@ -57,8 +68,10 @@ namespace aodbc::sync
         }
 
         template < typename ResultSet >
-        std::unique_ptr< ResultSet >
-        execute_query(std::string &sql_statement, std::size_t timeout = 0, std::size_t max_rows = 0)
+        std::unique_ptr< ResultSet > execute_query(std::string &           sql_statement,
+                                                   std::size_t             timeout  = 0,
+                                                   std::size_t             max_rows = 0,
+                                                   std::vector< message > *messages = nullptr)
         {
             auto statement = create_statement();
             if (timeout != statement::DEFAULT_TIMEOUT)
@@ -66,7 +79,7 @@ namespace aodbc::sync
             if (max_rows != statement::DEFAULT_MAX_ROWS)
                 statement.set_max_rows(max_rows);
 
-            return statement.execute_query< ResultSet >(sql_statement);
+            return statement.execute_query< ResultSet >(sql_statement, messages);
         }
 
         statement create_statement() { return statement(dbc_); }
