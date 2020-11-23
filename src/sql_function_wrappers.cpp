@@ -139,26 +139,10 @@ namespace aodbc
         handle_odbc_call(handle, type, SQLFreeHandle(type, handle));
     }
 
-    void sql_alloc_env(SQLHENV &handle_env)
-    {
-        handle_odbc_call(handle_env, SQL_HANDLE_ENV, SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &handle_env));
-    }
-    void sql_dealloc_env(SQLHENV &handle_env)
-    {
-        handle_odbc_call(handle_env, SQL_HANDLE_ENV, SQLFreeHandle(SQL_HANDLE_ENV, &handle_env));
-    }
+
     void sql_set_env_attr(SQLHENV &handle_env, SQLINTEGER attribute, SQLPOINTER value_ptr, SQLINTEGER string_length)
     {
         handle_odbc_call(handle_env, SQL_HANDLE_ENV, SQLSetEnvAttr(handle_env, attribute, value_ptr, string_length));
-    }
-
-    void sql_alloc_dbc(SQLHENV &handle_env, SQLHDBC &handle_dbc)
-    {
-        handle_odbc_call(handle_env, SQL_HANDLE_ENV, SQLAllocHandle(SQL_HANDLE_DBC, handle_env, &handle_dbc));
-    }
-    void sql_dealloc_dbc(SQLHDBC &handle_dbc)
-    {
-        handle_odbc_call(handle_dbc, SQL_HANDLE_DBC, SQLFreeHandle(SQL_HANDLE_DBC, &handle_dbc));
     }
 
 
@@ -202,12 +186,23 @@ namespace aodbc
     {
         handle_odbc_call(handle_stmt, SQL_HANDLE_STMT, SQLFreeHandle(SQL_HANDLE_STMT, handle_stmt));
     }
-    void sql_exec_direct(SQLHSTMT &handle_stmt, std::string &statement)
+    void sql_exec_direct(SQLHSTMT &handle_stmt, std::string &statement, std::vector<message> * messages)
     {
-        handle_odbc_call(
-            handle_stmt,
-            SQL_HANDLE_STMT,
-            SQLExecDirect(handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()));
+        if (messages)
+        {
+            handle_odbc_call(
+                handle_stmt,
+                SQL_HANDLE_STMT,
+                SQLExecDirect(handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()),messages);
+        }
+        else
+        {
+            handle_odbc_call(
+                handle_stmt,
+                SQL_HANDLE_STMT,
+                SQLExecDirect(handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()));
+        }
+
     }
     void sql_row_count(SQLHSTMT &handle_stmt, SQLLEN *row_count)
     {

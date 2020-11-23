@@ -9,6 +9,7 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <string>
+#include <fmt/format.h>
 
 namespace aodbc
 {
@@ -16,6 +17,12 @@ namespace aodbc
 
     struct message
     {
+        std::string to_string() const
+        {
+            return fmt::format("[{}]-[{}]: {}", state, error_number, text);
+        }
+
+
         SQLINTEGER  error_number;
         std::string text;
         SQLCHAR     state[SQL_SQLSTATE_SIZE + 1];
@@ -34,14 +41,9 @@ namespace aodbc
     void sql_dealloc(SQLHANDLE &handle, SQL_handle_type type);
 
     // --------------- ENVIRONMENT RELATED CALLS ---------------------
-
-    void sql_alloc_env(SQLHENV &handle_env);
-    void sql_dealloc_env(SQLHENV &handle_env);
     void sql_set_env_attr(SQLHENV &handle_env, SQLINTEGER attribute, SQLPOINTER value_ptr, SQLINTEGER string_length);
 
-    // --------------- DATABASE CONNECTION RELATED CALLS ---------------------
-    void sql_alloc_dbc(SQLHENV &handle_env, SQLHDBC *handle_dbc);
-    void sql_dealloc_dbc(SQLHDBC &handle_dbc);
+    // -------------- DATABASE CONNECTION RELATED CALLS ---------------------
     void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages);
     void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str);
     void sql_driver_disconnect(SQLHDBC &handle_dbc);
@@ -49,7 +51,7 @@ namespace aodbc
     // --------------- DATABASE STATEMENT RELATED CALLS ---------------------
     void    sql_alloc_stmt(SQLHDBC &handle_dbc, SQLHSTMT *handle_stmt);
     void    sql_dealloc_stmt(SQLHSTMT &handle_stmt);
-    void    sql_exec_direct(SQLHSTMT &handle_stmt, std::string &statement);
+    void    sql_exec_direct(SQLHSTMT &handle_stmt, std::string &statement, std::vector<message> * messages);
     void    sql_row_count(SQLHSTMT &handle_stmt, SQLLEN *row_count);
     void    sql_num_result_cols(SQLHSTMT &handle_stmt, SQLSMALLINT *num_result_cols);
     void    sql_set_max_rows(SQLHSTMT &handle_stmt, SQLULEN max_rows);
