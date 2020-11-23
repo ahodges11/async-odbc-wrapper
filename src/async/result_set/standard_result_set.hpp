@@ -13,10 +13,10 @@ namespace aodbc::async::result_set
     {
         struct sync_wrapper
         {
-            typedef sync::result_set::standard_result_set  impl_type;
+            typedef sync::result_set::standard_result_set impl_type;
 
-            sync_wrapper(std::unique_ptr< impl_type > impl, std::shared_ptr< net::thread_pool > thread_pool)
-            : thread_pool_(std::move(thread_pool))
+            sync_wrapper(std::unique_ptr< impl_type > impl, net::any_io_executor exec)
+            : exec_(std::move(exec))
             , impl_(std::move(impl))
             {
             }
@@ -26,7 +26,7 @@ namespace aodbc::async::result_set
             net::awaitable< bool > next()
             {
                 co_return co_await net::co_spawn(
-                    thread_pool_->get_executor(),
+                    get_executor(),
                     [&]() -> net::awaitable< bool > { co_return impl_->next(); },
                     net::use_awaitable);
             }
@@ -58,8 +58,10 @@ namespace aodbc::async::result_set
             std::size_t key_to_column_index(const std::string &key) { return impl_->key_to_column_index(key); }
 
           private:
-            std::shared_ptr< net::thread_pool > thread_pool_;
-            std::unique_ptr< impl_type >        impl_;
+            net::any_io_executor get_executor() {return exec_;}
+
+            net::any_io_executor         exec_;
+            std::unique_ptr< impl_type > impl_;
         };
     }   // namespace detail
 
@@ -68,8 +70,8 @@ namespace aodbc::async::result_set
         using impl_type = detail::sync_wrapper::impl_type;
 
         standard_result_set(std::unique_ptr< detail::sync_wrapper::impl_type > underlying,
-                            std::shared_ptr< net::thread_pool >                thread_pool)
-        : impl_(std::move(underlying), std::move(thread_pool))
+                            net::any_io_executor               exec)
+        : impl_(std::move(underlying), std::move(exec))
         {
         }
 
