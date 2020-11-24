@@ -26,7 +26,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_bit();
             else
-                return aodbc::types::aodbc_bit(*reinterpret_cast<const bool *>(value_ptr));
+                return aodbc::types::aodbc_bit(*reinterpret_cast< const bool * >(value_ptr));
         }
 
         aodbc::types::aodbc_bigint get_bigint(std::size_t row, std::size_t column) const
@@ -35,7 +35,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_bigint();
             else
-                return aodbc::types::aodbc_bigint(*reinterpret_cast<const std::int64_t *>(value_ptr));
+                return aodbc::types::aodbc_bigint(*reinterpret_cast< const std::int64_t * >(value_ptr));
         }
         aodbc::types::aodbc_int get_int(std::size_t row, std::size_t column) const
         {
@@ -43,7 +43,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_int();
             else
-                return aodbc::types::aodbc_int(*reinterpret_cast<const std::int32_t *>(value_ptr));
+                return aodbc::types::aodbc_int(*reinterpret_cast< const std::int32_t * >(value_ptr));
         }
         aodbc::types::aodbc_short get_short(std::size_t row, std::size_t column) const
         {
@@ -51,7 +51,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_short();
             else
-                return aodbc::types::aodbc_short(*reinterpret_cast<const std::int16_t *>(value_ptr));
+                return aodbc::types::aodbc_short(*reinterpret_cast< const std::int16_t * >(value_ptr));
         }
         aodbc::types::aodbc_tinyint get_tinyint(std::size_t row, std::size_t column) const
         {
@@ -59,17 +59,17 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_tinyint();
             else
-                return aodbc::types::aodbc_tinyint(*reinterpret_cast<const std::uint8_t *>(value_ptr));
+                return aodbc::types::aodbc_tinyint(*reinterpret_cast< const std::uint8_t * >(value_ptr));
         }
         aodbc::types::aodbc_string_view get_string_view(std::size_t row, std::size_t column) const
         {
             auto [value_ptr, indicator] = storage_->get_value(row, column);
-            auto ind = indicator;
+            auto ind                    = indicator;
             boost::ignore_unused(ind);
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_string_view();
             else
-                return aodbc::types::aodbc_string_view(reinterpret_cast<const char *>(value_ptr));
+                return aodbc::types::aodbc_string_view(reinterpret_cast< const char * >(value_ptr));
         }
         aodbc::types::aodbc_float get_float(std::size_t row, std::size_t column) const
         {
@@ -77,7 +77,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_float();
             else
-                return aodbc::types::aodbc_float(*reinterpret_cast<const float *>(value_ptr));
+                return aodbc::types::aodbc_float(*reinterpret_cast< const float * >(value_ptr));
         }
         aodbc::types::aodbc_double get_double(std::size_t row, std::size_t column) const
         {
@@ -85,7 +85,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_double();
             else
-                return aodbc::types::aodbc_double(*reinterpret_cast<const double *>(value_ptr));
+                return aodbc::types::aodbc_double(*reinterpret_cast< const double * >(value_ptr));
         }
         aodbc::types::aodbc_date get_date(std::size_t row, std::size_t column) const
         {
@@ -93,7 +93,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_date();
             else
-                return aodbc::types::aodbc_date(*reinterpret_cast<const types::aodbc_date::type *>(value_ptr));
+                return aodbc::types::aodbc_date(*reinterpret_cast< const types::aodbc_date::type * >(value_ptr));
         }
         aodbc::types::aodbc_time get_time(std::size_t row, std::size_t column) const
         {
@@ -101,7 +101,7 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_time();
             else
-                return aodbc::types::aodbc_time(*reinterpret_cast<const types::aodbc_time::type *>(value_ptr));
+                return aodbc::types::aodbc_time(*reinterpret_cast< const types::aodbc_time::type * >(value_ptr));
         }
         aodbc::types::aodbc_timestamp get_timestamp(std::size_t row, std::size_t column) const
         {
@@ -109,7 +109,8 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_timestamp();
             else
-                return aodbc::types::aodbc_timestamp(*reinterpret_cast<const types::aodbc_timestamp::type *>(value_ptr));
+                return aodbc::types::aodbc_timestamp(
+                    *reinterpret_cast< const types::aodbc_timestamp::type * >(value_ptr));
         }
         aodbc::types::aodbc_decimal get_decimal(std::size_t row, std::size_t column) const
         {
@@ -117,21 +118,17 @@ namespace aodbc::sync::result_set
             if (indicator == SQL_NULL_DATA)
                 return aodbc::types::aodbc_decimal();
             else
-                return aodbc::types::aodbc_decimal(*reinterpret_cast<const types::aodbc_decimal::type *>(value_ptr));
+                return aodbc::types::aodbc_decimal(*reinterpret_cast< const types::aodbc_decimal::type * >(value_ptr));
         }
-
-
-
-
 
       private:
         std::shared_ptr< const compact_row_storage > storage_;
         const std::size_t                            row_count_;
     };
 
-    struct bulk_result_set
+    struct compact_result_set
     {
-        bulk_result_set(handles::stmt_handle &stmt)
+        compact_result_set(handles::stmt_handle &stmt)
         : stmt_(stmt)
         , metadata_(std::make_shared< compact_metadata >())
         , storage_()
@@ -218,7 +215,7 @@ namespace aodbc::sync::result_set
             return rows_fetched == quantity;
         }
 
-        void fetch_all(std::size_t rows_per_fetch=256)
+        void fetch_all(std::size_t rows_per_fetch = 256)
         {
             bool more_rows = true;
             while (more_rows)
