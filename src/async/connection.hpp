@@ -33,12 +33,10 @@ namespace aodbc::async
                 }
             }
 
-            net::awaitable< void > connect(std::string connection_str, std::vector<message> * messages)
+            net::awaitable< void > connect(std::string connection_str, std::vector< message > *messages)
             {
-                auto work = [self = shared_from_this(),
-                             str  = std::move(connection_str), messages]() mutable -> net::awaitable< void > {
-                    co_return self->connection_->connect(str,messages);
-                };
+                auto work = [self = shared_from_this(), str = std::move(connection_str), messages]() mutable
+                    -> net::awaitable< void > { co_return self->connection_->connect(str, messages); };
                 co_await net::co_spawn(get_executor(), std::move(work), net::use_awaitable);
             }
             net::awaitable< void > disconnect()
@@ -84,6 +82,8 @@ namespace aodbc::async
                     get_executor());
             }
 
+            bool connected() const { return connection_->connected(); }
+
           private:
             // net::strand< net::thread_pool::executor_type > get_executor()
             net::strand< net::system_executor > get_executor()
@@ -109,12 +109,14 @@ namespace aodbc::async
         connection(const connection &other) = delete;
         connection &operator=(const connection &other) = delete;
 
-        net::awaitable< void > connect(std::string connection_str, std::vector<message> * messages= nullptr)
+        net::awaitable< void > connect(std::string connection_str, std::vector< message > *messages = nullptr)
         {
             co_await impl_->connect(std::move(connection_str), messages);
         }
 
         net::awaitable< void > disconnect() { co_await impl_->disconnect(); }
+
+        bool connected() const { return impl_->connected(); }
 
       public:   // execute statements
         net::awaitable< long > execute(std::string &sql_statement, std::size_t timeout = 0, std::size_t max_rows = 0)
