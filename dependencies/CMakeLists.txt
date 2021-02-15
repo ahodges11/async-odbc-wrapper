@@ -53,7 +53,7 @@ BuildCmakeContent(zlib ZLIB
 # Boost
 #
 
-RequireBoost(VERSION 1.74.0 COMPONENTS container coroutine log filesystem iostreams program_options system random PREFIX ${deps_prefix})
+RequireBoost(VERSION 1.75.0 COMPONENTS container coroutine log filesystem iostreams program_options system random PREFIX ${deps_prefix})
 
 #
 # OpenSSL

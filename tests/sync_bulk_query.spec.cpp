@@ -6,7 +6,7 @@
 
 #include <catch2/catch.hpp>
 
-void check_values(const aodbc::sync::result_set::result_view & view, std::size_t total_rows)
+void check_values(const aodbc::sync::result_set::result_view &view, std::size_t total_rows)
 {
     for (std::size_t x = 1; x <= total_rows; x++)
     {
@@ -64,13 +64,9 @@ void check_values(const aodbc::sync::result_set::result_view & view, std::size_t
     }
 }
 
-
-/*
 TEST_CASE("sync bulk query")
 {
     auto start = std::chrono::high_resolution_clock::now();
-
-
 
     SECTION("fetch one")
     {
@@ -80,7 +76,7 @@ TEST_CASE("sync bulk query")
 
         constexpr std::size_t total_rows = 251;
         std::string           sql        = "select * from testing_bulk;";
-        auto                  res_set = connection.execute_query< aodbc::sync::result_set::bulk_result_set >(sql);
+        auto                  res_set    = connection.execute_query< aodbc::sync::result_set::compact_result_set >(sql);
 
         bool more_results = true;
         while (more_results)
@@ -94,12 +90,13 @@ TEST_CASE("sync bulk query")
         CHECK(view.row_count() == total_rows);
 
         // Check all rows
-        check_values(view,total_rows);
-
+        check_values(view, total_rows);
 
         connection.disconnect();
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "sync-bulk-query: 1 connections - 1 query - fetch_one() took: " << (end - start).count() << std::endl;
+        std::cout << "sync: 1 connections - 1 query - fetch_one() took: " << (end - start).count() << "(ns) "
+                  << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
+                  << std::endl;
     }
 
     SECTION("fetch many")
@@ -110,7 +107,7 @@ TEST_CASE("sync bulk query")
 
         constexpr std::size_t total_rows = 251;
         std::string           sql        = "select * from testing_bulk;";
-        auto                  res_set    = connection.execute_query< aodbc::sync::result_set::bulk_result_set >(sql);
+        auto                  res_set    = connection.execute_query< aodbc::sync::result_set::compact_result_set >(sql);
 
         bool more_rows = true;
         while (more_rows)
@@ -121,11 +118,13 @@ TEST_CASE("sync bulk query")
         auto view = res_set->get_result_view();
         CHECK(view.row_count() == total_rows);
 
-        check_values(view,total_rows);
+        check_values(view, total_rows);
 
         connection.disconnect();
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "sync-bulk-query: 1 connections - 1 query - fetch_many(50) took: " << (end - start).count() << std::endl;
+        std::cout << "sync: 1 connections - 1 query - fetch_many(50) took: " << (end - start).count() << "(ns) "
+                  << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
+                  << std::endl;
     }
 
     SECTION("fetch all")
@@ -136,16 +135,17 @@ TEST_CASE("sync bulk query")
 
         constexpr std::size_t total_rows = 251;
         std::string           sql        = "select * from testing_bulk;";
-        auto                  res_set    = connection.execute_query< aodbc::sync::result_set::bulk_result_set >(sql);
+        auto                  res_set    = connection.execute_query< aodbc::sync::result_set::compact_result_set >(sql);
 
         res_set->fetch_all();
 
         auto view = res_set->get_result_view();
-        check_values(view,total_rows);
+        check_values(view, total_rows);
 
         connection.disconnect();
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "sync-bulk-query: 1 connections - 1 query - fetch_all() took: " << (end - start).count() << std::endl;
+        std::cout << "sync: 1 connections - 1 query - fetch_all() took: " << (end - start).count() << "(ns) "
+                  << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
+                  << std::endl;
     }
 }
- */

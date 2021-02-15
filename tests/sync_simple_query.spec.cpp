@@ -189,6 +189,7 @@ struct multiple_queries_text
         }
 
         connection.disconnect();
+        CHECK_FALSE(connection.connected());
     }
 };
 
@@ -201,8 +202,8 @@ TEST_CASE("sync simple query")
         test.start(connection_str);
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << "sync: 1 connections - 1 query took: " << (end - start).count() << "(ns) "
-                                                                                     << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
-                                                                                     << std::endl;
+                  << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
+                  << std::endl;
     }
 
     SECTION("100 connection - 1 query")
@@ -214,8 +215,8 @@ TEST_CASE("sync simple query")
         }
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << "sync: 100 connections - 1 query took: " << (end - start).count() << "(ns) "
-                                                                                       << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
-                                                                                       << std::endl;
+                  << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
+                  << std::endl;
     }
 
     SECTION("1 connection - 2 queries")
@@ -224,8 +225,8 @@ TEST_CASE("sync simple query")
         test.start(connection_str, 2);
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << "sync: 1 connections - 2 queries took: " << (end - start).count() << "(ns) "
-                                                                                       << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
-                                                                                       << std::endl;
+                  << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
+                  << std::endl;
     }
 
     SECTION("1 connection - 100 queries")

@@ -3,13 +3,10 @@ if(NOT REQUIRE_BOOST_CMAKE)
 else()
     return()
 endif()
-
 #
 # file level configuation
 #
-
 set(boost_PATCHES_DIR boost-patch)
-
 function(ListToString list outstr)
     set(result)
     foreach(item IN LISTS ${list})
@@ -17,7 +14,6 @@ function(ListToString list outstr)
     endforeach()
     set(${outstr} "${result}" PARENT_SCOPE)
 endfunction()
-
 function(BoostSource boost_VERSION urlout hashout)
     if (boost_VERSION STREQUAL "1.73.0")
         set(${urlout} "https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.bz2" PARENT_SCOPE)
@@ -25,12 +21,15 @@ function(BoostSource boost_VERSION urlout hashout)
     elseif(boost_VERSION STREQUAL "1.74.0")
         set(${urlout} "https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2" PARENT_SCOPE)
         set(${hashout} "SHA256=83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1" PARENT_SCOPE)
+    elseif(boost_VERSION STREQUAL "1.75.0")
+        set(${urlout} "https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2" PARENT_SCOPE)
+        set(${hashout} "SHA256=953db31e016db7bb207f11432bef7df100516eeb746843fa0486a222e3fd49cb" PARENT_SCOPE)
     else()
         message(FATAL_ERROR "unknown hash for version ${boost_VERSION}")
     endif()
 endfunction()
-
 function(BoostDeduceToolSet out)
+    message(STATUS "[dependencies] CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}")
     set(result)
     if (CMAKE_CXX_COMPILER_ID MATCHES "[Cl]ang")
         set(result "clang")
@@ -44,7 +43,6 @@ function(BoostDeduceToolSet out)
     message(STATUS "[dependencies]: Boost toolset deduced: ${result}")
     set("${out}" "${result}" PARENT_SCOPE)
 endfunction()
-
 function(BoostDeduceCXXVersion boost_version out)
     set(result)
     if (CMAKE_CXX_STANDARD LESS_EQUAL 17)
@@ -61,7 +59,6 @@ function(BoostDeduceCXXVersion boost_version out)
     message(STATUS "[dependencies]: Boost cxxstd deduced: ${result}")
     set("${out}" "${result}" PARENT_SCOPE)
 endfunction()
-
 function(RequireBoost )
     cmake_parse_arguments(boost
             "" # options
@@ -77,28 +74,25 @@ function(RequireBoost )
     if (NOT boost_COMPONENTS)
         set(boost_COMPONENTS headers)
     endif()
-
     include(FetchContent)
     BoostSource("${boost_VERSION}" boost_URL boost_HASH)
+    message(STATUS "[dependencies] boost version ${boost_VERSION}")
     FetchContent_Declare(boost
             URL "${boost_URL}"
             URL_HASH "${boost_HASH}")
     FetchContent_GetProperties(boost)
     if (NOT boost_POPULATED)
+        message(STATUS "[dependencies] downloading boost from ${boost_URL}")
         FetchContent_Populate(boost)
     endif ()
-
     #
     # patch step
     #
-
     file(GLOB patches CONFIGURE_DEPENDS "${boost_PATCHES_DIR}/version-${boost_VERSION}-*.patch")
     if (NOT boost_PATCHES_APPLIED STREQUAL "${patches}")
         message(STATUS "[dependencies] applying boost patches ${patches}")
-
         set(boost_BOOTSTRAPPED "" CACHE INTERNAL "")
         set(boost_BUILT "" CACHE INTERNAL "")
-
         foreach(patch IN LISTS patches)
             string(REGEX MATCH "^(.*)/version-(.*)-(.*)\\.patch$" matched "${patch}")
             if (NOT matched)
@@ -115,17 +109,13 @@ function(RequireBoost )
         endforeach()
         set(boost_PATCHES_APPLIED "${patches}" CACHE INTERNAL "patches applied to boost")
     endif()
-
     #
     # bootstrap
     #
-
     set(bootstrap_COMMAND "./bootstrap.sh")
     if (NOT boost_BOOTSTRAPPED STREQUAL "${bootstrap_COMMAND}")
         message("[boost] bootstrapping at ${boost_SOURCE_DIR} with ${bootstrap_COMMAND}")
-
         set(boost_BUILT "" CACHE INTERNAL "")
-
         execute_process(
                 COMMAND ${bootstrap_COMMAND}
                 WORKING_DIRECTORY ${boost_SOURCE_DIR}
@@ -136,11 +126,9 @@ function(RequireBoost )
             message(FATAL_ERROR "cannot bootstrap boost, error code: ${boost_BOOTSTRAP_ERROR}")
         endif()
     endif ()
-
     #
     # build step
     #
-
     include(ProcessorCount)
     ProcessorCount(processors)
     set(b2_args
@@ -149,6 +137,16 @@ function(RequireBoost )
             "threading=multi")
     BoostDeduceToolSet(toolset)
     list(APPEND b2_args "toolset=${toolset}")
+    message(STATUS "[dependencies] boost toolset=${toolset}")
+    if (toolset STREQUAL "clang")
+        configure_file(cmake/user-config.jam.in "${boost_SOURCE_DIR}/user-config.jam" @ONLY)
+        list(APPEND b2_args "--user-config=${boost_SOURCE_DIR}/user-config.jam")
+    endif()
+    if (DEFINED CMAKE_C_COMPILER)
+        if ("toolset" STREQUAL "clang")
+            configure_file(project-config.jam.in ${boost_SOURCE_DIR}/project-config.jam @ONLY)
+        endif()
+    endif()
     BoostDeduceCXXVersion(${boost_VERSION} cxxstd)
     list(APPEND b2_args "cxxstd=${cxxstd}")
     if (CMAKE_CXX_FLAGS)
@@ -174,24 +172,24 @@ function(RequireBoost )
     list(APPEND b2_args
             "stage"
             "install")
-
     if(NOT boost_BUILT STREQUAL "${b2_args}")
         ListToString(b2_args args_str)
         message(STATUS "[dependencies] building boost with ${args_str}")
-
         execute_process(
                 COMMAND "./b2" "--reconfigure" ${b2_args}
                 WORKING_DIRECTORY ${boost_SOURCE_DIR}
+                COMMAND_ECHO STDOUT
+                ERROR_VARIABLE boost_ERROR_VARIABLE
                 RESULT_VARIABLE boost_BUILD_ERROR)
         if (NOT boost_BUILD_ERROR)
             set(boost_BUILT "${b2_args}" CACHE INTERNAL "components built for boost")
         else()
-            message(FATAL_ERROR "[dependencies] boost build failed")
+            message(FATAL_ERROR "[dependencies] boost build failed:"
+                    "${boost_BUILD_ERROR}\n"
+                    "${boost_ERROR_VARIABLE}")
         endif()
     endif()
-
     set(BOOST_ROOT "${boost_BINARY_DIR}/install")
     set(BOOST_ROOT "${BOOST_ROOT}" PARENT_SCOPE)
     message(STATUS "[dependencies] BOOST_ROOT = ${BOOST_ROOT}")
-
 endfunction()

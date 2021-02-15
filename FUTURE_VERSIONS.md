@@ -1,20 +1,21 @@
-Current version: v0.7
+##Current version: v0.7
 
 
-Future versions:
+###Future versions:
 
 
-v0.7.1:
+####v0.7.1:
  - async compact rowset
  - testing for async compact rowset
-v0.7.2:
- - 
+ 
+ 
+####v0.7.2:
+ - add logging support (spdlog by default)
 
 
-v0.8:
-main features:
-Better error + message handling support
-Complete testing for existing code
+####v0.8:
+ - Better error + message handling support
+ - Complete testing for existing code
 
 
 

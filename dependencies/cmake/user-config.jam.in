@@ -1,0 +1,1 @@
+using clang : : @CMAKE_C_COMPILER@ : ;

@@ -204,6 +204,9 @@ namespace aodbc::sync::result_set
                         BOOST_LOG_TRIVIAL(error) << "Received a valid row after a SQL_ROW_NOROW code";
                         throw std::runtime_error("Received a valid row after a SQL_ROW_NOROW code");
                     }
+                    rows_fetched++;   // count the row
+                    break;
+
                 default:
                     rows_fetched++;   // count the row
                 }

@@ -193,7 +193,21 @@ struct multiple_queries
     net::awaitable< void > start(std::string &con_str, std::size_t queries)
     {
         std::vector< aodbc::message > messages;
-        auto                          connection = aodbc::async::connection();
+
+        auto check_messages = [&messages](auto context) {
+            if (not messages.empty())
+            {
+                std::cout << "message(s) received in sql_func: " << context << "\nMessages: \n";
+                for (auto &msg : messages)
+                {
+                    std::cout << msg.to_string() << "\n";
+                }
+                std::cout << std::endl;
+                messages.clear();
+            }
+        };
+
+        auto connection = aodbc::async::connection();
         co_await connection.connect(con_str);
 
         auto sql = std::string("select * from testing_bulk with (nolock);");
@@ -202,14 +216,7 @@ struct multiple_queries
         {
             auto res_set = co_await connection.execute_query< aodbc::async::result_set::standard_result_set >(
                 sql, 0, 0, &messages);
-            if (not messages.empty())
-            {
-                std::cout << "has message: " << std::endl;
-                for (auto &msg : messages)
-                {
-                    std::cout << msg.to_string() << std::endl;
-                }
-            }
+            check_messages("connection.execute_query()");
 
             auto count = 0;
             while (co_await res_set->next())
@@ -278,6 +285,8 @@ struct multiple_queries
             }
             CHECK(count == 251);
         }
+        co_await connection.disconnect();
+        CHECK_FALSE(connection.connected());
     }
 };
 
