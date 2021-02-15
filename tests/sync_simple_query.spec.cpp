@@ -2,9 +2,9 @@
 // Created by ahodges on 03/11/2020.
 //
 
-#include "aodbc.hpp"
+#include <AODBC/aodbc.hpp>
 #include "arguments.hpp"
-#include "sync/result_set/standard_result_set.hpp"
+#include <AODBC/sync/result_set/standard_result_set.hpp>
 
 #include <catch2/catch.hpp>
 

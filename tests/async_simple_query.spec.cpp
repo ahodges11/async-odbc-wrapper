@@ -1,11 +1,12 @@
 //
 // Created by ahodges on 03/11/2020.
 //
-#include "aodbc.hpp"
 #include "arguments.hpp"
-#include "async/result_set/standard_result_set.hpp"
 #include "exception_handler.hpp"
 #include "net.hpp"
+
+#include <AODBC/aodbc.hpp>
+#include <AODBC/async/result_set/standard_result_set.hpp>
 
 #include <catch2/catch.hpp>
 #include <cstdlib>
@@ -117,7 +118,6 @@ struct single_query
         auto messages   = std::vector< aodbc::message >();
         auto connection = aodbc::async::connection();
         co_await connection.connect(conn_str, &messages);
-
         {
             // Execute sql
             auto sql     = std::string("select * from testing_more with (nolock);");
@@ -400,40 +400,4 @@ TEST_CASE("async simple query")
                   << std::chrono::duration_cast< std::chrono::milliseconds >((end - start)).count() << "(ms)"
                   << std::endl;
     }
-
-    /*
-    SECTION("1000 connections - 0 query")
-    {
-        for (int x = 0; x < 1000000; x++)
-        {
-            aodbc::net::co_spawn(
-                net::prefer(ioc.get_executor(), net::execution::outstanding_work.tracked),
-                [str = connection_str]() mutable -> aodbc::net::awaitable< void > {
-                  //auto test = impl_connect_test();
-                  auto test = co_await_test();
-
-                    co_await test.start(str);
-                },
-                [](auto ptr) { exception_handler(ptr, "async connection test"); });
-        }
-        auto start = std::chrono::high_resolution_clock::now();
-
-        try
-        {
-            ioc.run();
-        }
-        catch (std::exception &ec)
-        {
-            aodbc::log_fatal(fmt::format("exception caught in ioc.run() - {}", ec.what()).data());
-            aodbc::async::get_thread_pool().stop();
-            aodbc::async::get_thread_pool().join();
-            std::exit(100);
-        }
-
-        auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "async: 1000 connections - 0 query took: " << (end - start).count() << std::endl;
-    }
-     */
-
-    // TODO turn these tests back on
 }

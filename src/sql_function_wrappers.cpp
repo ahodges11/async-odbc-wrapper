@@ -2,13 +2,9 @@
 // Created by ahodges on 07/10/2020.
 //
 
-#include "sql_function_wrappers.hpp"
+#include <AODBC/sql_function_wrappers.hpp>
+#include <AODBC/log.hpp>
 
-#include "log.hpp"
-
-#include <cassert>
-#include <iostream>
-#include <string>
 #include <vector>
 
 namespace aodbc

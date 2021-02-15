@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "exception.hpp"
+#include <AODBC/exception.hpp>
 
 #include <sql.h>
 #include <sqlext.h>

@@ -4,14 +4,18 @@
 
 #pragma once
 
-#include "handles.hpp"
-#include "sql.h"
-#include "sqlext.h"
-#include "types/date.hpp"
-#include "types/decimal.hpp"
-#include "types/nullable.hpp"
-#include "types/time.hpp"
-#include "types/timestamp.hpp"
+#include <AODBC/handles.hpp>
+
+#include <AODBC/types/date.hpp>
+#include <AODBC/types/decimal.hpp>
+#include <AODBC/types/nullable.hpp>
+#include <AODBC/types/time.hpp>
+#include <AODBC/types/timestamp.hpp>
+
+// TODO maybe
+#include <sql.h>
+#include <sqlext.h>
+// TODO maybe
 
 #include <iostream>
 #include <tuple>

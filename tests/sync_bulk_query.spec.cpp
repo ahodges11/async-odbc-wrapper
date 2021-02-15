@@ -2,7 +2,7 @@
 // Created by ahodges on 10/11/2020.
 //
 #include "arguments.hpp"
-#include "sync.hpp"
+#include <AODBC/sync.hpp>
 
 #include <catch2/catch.hpp>
 

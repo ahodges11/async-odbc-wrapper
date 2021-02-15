@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "async/result_set/result_set_concept.hpp"
-#include "sync.hpp"
-#include "thread_pool.hpp"
+#include <AODBC/async/result_set/result_set_concept.hpp>
+#include <AODBC/sync.hpp>
+#include <AODBC/async/thread_pool.hpp>
 
 #include <boost/function.hpp>
 #include <boost/thread/concurrent_queues/sync_queue.hpp>

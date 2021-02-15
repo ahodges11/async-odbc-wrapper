@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "config.hpp"
-#include "handles.hpp"
-#include "types/types.hpp"
+#include <AODBC/config.hpp>
+#include <AODBC/handles.hpp>
+#include <AODBC/types/types.hpp>
 
-#include <log.hpp>
+#include <AODBC/log.hpp>
 #include <unordered_map>
 #include <vector>
 

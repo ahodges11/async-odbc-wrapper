@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "environment.hpp"
-#include "statement.hpp"
+#include <AODBC/environment.hpp>
+#include <AODBC/statement.hpp>
 
 #include <boost/core/ignore_unused.hpp>
 

@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "date.hpp"
-#include "time.hpp"
+#include <AODBC/types/date.hpp>
+#include <AODBC/types/time.hpp>
 
 #include <type_traits>
 #include <sqltypes.h>

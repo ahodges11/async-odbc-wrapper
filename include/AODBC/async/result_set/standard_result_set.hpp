@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "config.hpp"
-#include "sync/result_set/standard_result_set.hpp"
+#include <AODBC/config.hpp>
+#include <AODBC/sync/result_set/standard_result_set.hpp>
 
 namespace aodbc::async::result_set
 {

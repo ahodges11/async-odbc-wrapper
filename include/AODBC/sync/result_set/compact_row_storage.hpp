@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "compact_metadata.hpp"
-#include "config.hpp"
+#include <AODBC/sync/result_set/compact_metadata.hpp>
+#include <AODBC/config.hpp>
 
 #include <boost/core/ignore_unused.hpp>
 #include <deque>

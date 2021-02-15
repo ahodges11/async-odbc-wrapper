@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "config.hpp"
-#include "log.hpp"
-#include "sql_function_wrappers.hpp"
+#include <AODBC/config.hpp>
+#include <AODBC/log.hpp>
+#include <AODBC/sql_function_wrappers.hpp>
 
 #include <memory>
 

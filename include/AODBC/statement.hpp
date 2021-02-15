@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "handles.hpp"
-#include "sql_function_wrappers.hpp"
+#include <AODBC/handles.hpp>
+#include <AODBC/sql_function_wrappers.hpp>
 
 #include <memory>
 

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "config.hpp"
+#include <AODBC/config.hpp>
 
-#include "sync/result_set/metadata.hpp"
+#include <AODBC/sync/result_set/metadata.hpp>
 
 namespace aodbc::async::result_set
 {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "metadata.hpp"
+#include <AODBC/sync/result_set/metadata.hpp>
 
 #include <vector>
 

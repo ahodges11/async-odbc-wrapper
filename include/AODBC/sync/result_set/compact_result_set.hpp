@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "compact_row_storage.hpp"
-#include "handles.hpp"
-#include "metadata.hpp"
+#include <AODBC/sync/result_set/compact_row_storage.hpp>
+#include <AODBC/handles.hpp>
+#include <AODBC/sync/result_set/metadata.hpp>
 
 namespace aodbc::sync::result_set
 {

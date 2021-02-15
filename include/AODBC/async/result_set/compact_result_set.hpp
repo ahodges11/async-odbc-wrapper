@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "sync/result_set/compact_result_set.hpp"
+#include <AODBC/sync/result_set/compact_result_set.hpp>
 
 namespace aodbc::async::result_set
 {

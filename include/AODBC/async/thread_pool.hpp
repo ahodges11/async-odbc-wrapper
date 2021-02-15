@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "config.hpp"
+#include <AODBC/config.hpp>
 #include <thread>
 
 namespace aodbc::async
