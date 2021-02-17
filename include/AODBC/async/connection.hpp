@@ -5,9 +5,8 @@
 #pragma once
 
 #include <AODBC/async/result_set/result_set_concept.hpp>
-#include <AODBC/sync.hpp>
 #include <AODBC/async/thread_pool.hpp>
-
+#include <AODBC/sync.hpp>
 #include <boost/function.hpp>
 #include <boost/thread/concurrent_queues/sync_queue.hpp>
 #include <memory>
@@ -49,14 +48,19 @@ namespace aodbc::async
                     net::use_awaitable);
             }
 
-            net::awaitable< long >
-            execute(std::string &sql_statement, std::size_t timeout = 0, std::size_t max_rows = 0)
+            net::awaitable< long > execute(std::string &           sql_statement,
+                                           std::size_t             timeout  = 0,
+                                           std::size_t             max_rows = 0,
+                                           std::vector< message > *messages = nullptr)
             {
                 co_return co_await net::co_spawn(
                     get_executor(),
-                    [self = shared_from_this(), sql_statement = std::move(sql_statement), timeout, max_rows]() mutable
-                    -> net::awaitable< long > {
-                        co_return self->connection_->execute(sql_statement, timeout, max_rows);
+                    [self          = shared_from_this(),
+                     sql_statement = std::move(sql_statement),
+                     timeout,
+                     max_rows,
+                     messages]() mutable -> net::awaitable< long > {
+                        co_return self->connection_->execute(sql_statement, timeout, max_rows, messages);
                     },
                     net::use_awaitable);
             }
@@ -119,9 +123,12 @@ namespace aodbc::async
         bool connected() const { return impl_->connected(); }
 
       public:   // execute statements
-        net::awaitable< long > execute(std::string &sql_statement, std::size_t timeout = 0, std::size_t max_rows = 0)
+        net::awaitable< long > execute(std::string &           sql_statement,
+                                       std::size_t             timeout  = 0,
+                                       std::size_t             max_rows = 0,
+                                       std::vector< message > *messages = nullptr)
         {
-            co_return co_await impl_->execute(sql_statement, timeout, max_rows);
+            co_return co_await impl_->execute(sql_statement, timeout, max_rows, messages);
         }
 
         template < typename ResultSet >

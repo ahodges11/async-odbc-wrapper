@@ -68,7 +68,7 @@ namespace aodbc::sync
         bool connected() const { return connected_; }
 
       public:   // execute sql statement
-        long execute(std::string &sql_statement, std::size_t timeout = 0, std::size_t max_rows = 0)
+        long execute(std::string &sql_statement, std::size_t timeout = 0, std::size_t max_rows = 0, std::vector<message> * messages = nullptr)
         {
             auto statement = create_statement();
             if (timeout != statement::DEFAULT_TIMEOUT)
@@ -76,7 +76,7 @@ namespace aodbc::sync
             if (max_rows != statement::DEFAULT_MAX_ROWS)
                 statement.set_max_rows(max_rows);
 
-            return statement.execute(sql_statement);
+            return statement.execute(sql_statement, messages);
         }
 
         template < typename ResultSet >
