@@ -6,7 +6,6 @@
 
 #include <AODBC/environment.hpp>
 #include <AODBC/statement.hpp>
-
 #include <boost/core/ignore_unused.hpp>
 
 namespace aodbc::sync
@@ -38,18 +37,24 @@ namespace aodbc::sync
             sql_driver_connect(dbc_.get_handle(), connection_str);
             connected_ = true;
         }
-        void connect(std::string &connection_str, std::vector< message > *messages=nullptr)
+        void connect(std::string &connection_str, std::vector< message > *messages = nullptr)
         {
+            if (cancelled_)
+                return;
             assert(not connected());
             sql_driver_connect(dbc_.get_handle(), connection_str, messages);
             connected_ = true;
         }
         void disconnect()
         {
-            assert(connected());
-            sql_driver_disconnect(dbc_.get_handle());
-            dbc_.get_self()->mark_children_dead();
-            connected_ = false;
+            assert(not cancelled_);
+            if (connected())
+            {
+                cancelled_ = true;
+                sql_driver_disconnect(dbc_.get_handle());
+                dbc_.get_self()->mark_children_dead();
+                connected_ = false;
+            }
         }
 
       public:   // query state
@@ -87,6 +92,7 @@ namespace aodbc::sync
       private:                      // data members
         handles::dbc_handle dbc_;   // the underlying odbc connection handle
         bool                connected_;
+        bool                cancelled_;
     };
 
 }   // namespace aodbc::sync
