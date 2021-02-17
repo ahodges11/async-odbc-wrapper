@@ -61,7 +61,7 @@ namespace aodbc::async
                     net::use_awaitable);
             }
 
-            template < result_set::AsyncResultSet ResultSet >
+            template < typename ResultSet >
             net::awaitable< std::unique_ptr< ResultSet > > execute_query(std::string &           sql_statement,
                                                                          std::size_t             timeout  = 0,
                                                                          std::size_t             max_rows = 0,
@@ -124,7 +124,7 @@ namespace aodbc::async
             co_return co_await impl_->execute(sql_statement, timeout, max_rows);
         }
 
-        template < result_set::AsyncResultSet ResultSet >
+        template < typename ResultSet >
         net::awaitable< std::unique_ptr< ResultSet > > execute_query(std::string &           sql_statement,
                                                                      std::size_t             timeout  = 0,
                                                                      std::size_t             max_rows = 0,

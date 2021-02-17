@@ -62,6 +62,7 @@ namespace aodbc::async::result_set
 
     struct compact_result_set
     {
+        typedef sync::result_set::compact_result_set impl_type;
         compact_result_set(std::unique_ptr< sync::result_set::compact_result_set > impl, net::any_io_executor exec)
         : impl_(std::move(impl), exec)
         {

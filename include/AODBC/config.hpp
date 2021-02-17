@@ -10,5 +10,4 @@ namespace aodbc
 {
     namespace net = boost::asio;
 
-
 }
