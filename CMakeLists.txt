@@ -1,17 +1,22 @@
 cmake_minimum_required(VERSION 3.17)
 
 
-include(dependencies/cmake/ForwardCMakeVars.cmake)
-
 project(AODBC VERSION 0.1)
 
-ForwardCMakeArgs(to_forward)
-message(STATUS "[dependencies] executing dependencies with ${to_forward}")
-execute_process(COMMAND ${CMAKE_COMMAND}
-        "-H${CMAKE_CURRENT_LIST_DIR}/dependencies"
-        "-B${CMAKE_CURRENT_BINARY_DIR}/dependencies"
-        ${to_forward})
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/dependencies/install)
+
+get_directory_property(hasParent PARENT_DIRECTORY)
+if(NOT hasParent)
+    include(dependencies/cmake/ForwardCMakeVars.cmake)
+    ForwardCMakeArgs(to_forward)
+    message(STATUS "[dependencies] executing dependencies with ${to_forward}")
+    execute_process(COMMAND ${CMAKE_COMMAND}
+            "-H${CMAKE_CURRENT_LIST_DIR}/dependencies"
+            "-B${CMAKE_CURRENT_BINARY_DIR}/dependencies"
+            ${to_forward})
+    list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/dependencies/install)
+endif()
+
+
 
 
 find_package(Boost COMPONENTS thread log REQUIRED CONFIG)
@@ -43,7 +48,7 @@ target_include_directories(AODBC PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
-target_link_libraries(AODBC PUBLIC Boost::log Boost::thread Threads::Threads fmt::fmt spdlog::spdlog ${ODBC_LIBRARIES})
+target_link_libraries(AODBC PUBLIC Boost::log Boost::thread Threads::Threads spdlog::spdlog fmt::fmt ${ODBC_LIBRARIES})
 target_compile_options(AODBC PRIVATE -Werror -Wall -Wextra -pedantic)
 #target_compile_definitions(aodbc-lib PUBLIC BOOST_ASIO_ENABLE_HANDLER_TRACKING=0)
 
