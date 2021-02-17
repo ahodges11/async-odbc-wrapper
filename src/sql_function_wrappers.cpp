@@ -2,21 +2,18 @@
 // Created by ahodges on 07/10/2020.
 //
 
-#include <AODBC/sql_function_wrappers.hpp>
 #include <AODBC/log.hpp>
-
+#include <AODBC/sql_function_wrappers.hpp>
+#include <fmt/format.h>
+#include <string_view>
 #include <vector>
 
 namespace aodbc
 {
     namespace detail
     {
-        void handle_diagnostic_messages(SQLHANDLE &             handle,
-                                        SQLSMALLINT             handle_type,
-                                        std::vector< message > *messages)
+        void handle_diagnostic_messages(SQLHANDLE &handle, SQLSMALLINT handle_type, std::vector< message > *messages)
         {
-
-
             if (messages == nullptr)
                 return;
             else
@@ -47,8 +44,6 @@ namespace aodbc
         }
         void handle_diagnostic_print(SQLHANDLE &handle, SQLSMALLINT handle_type)
         {
-
-
             SQLSMALLINT record_num = 0;
             SQLINTEGER  error_num;
             SQLCHAR     txt[1000];
@@ -67,13 +62,18 @@ namespace aodbc
                 if (continue_code != SQL_SUCCESS && continue_code != SQL_SUCCESS_WITH_INFO)
                     return;
                 // print
-                log_info(fmt::format("[{}]-[{}]: {}", state, error_num, txt).data());
+                log_info(
+                    fmt::format(
+                        "[{}]-[{}]: {}",
+                        std::string_view(reinterpret_cast< const char * >(&state[0]), sizeof(state) / sizeof(state[0])),
+                        error_num,
+                        std::string_view(reinterpret_cast< const char * >(&txt[0]), sizeof(txt) / sizeof(txt[0])))
+                        .data());
             }
         }
     }   // namespace detail
 
-    void
-    handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, std::vector< message > *messages)
+    void handle_diagnostic(SQLHANDLE &handle, SQLSMALLINT handle_type, std::vector< message > *messages)
     {
         detail::handle_diagnostic_messages(handle, handle_type, messages);
     }
@@ -84,7 +84,6 @@ namespace aodbc
 
     void handle_odbc_call(SQLHANDLE &handle, SQLSMALLINT handle_type, RETCODE retcode)
     {
-
         switch (retcode)
         {
         case SQL_SUCCESS:
@@ -135,12 +134,10 @@ namespace aodbc
         handle_odbc_call(handle, type, SQLFreeHandle(type, handle));
     }
 
-
     void sql_set_env_attr(SQLHENV &handle_env, SQLINTEGER attribute, SQLPOINTER value_ptr, SQLINTEGER string_length)
     {
         handle_odbc_call(handle_env, SQL_HANDLE_ENV, SQLSetEnvAttr(handle_env, attribute, value_ptr, string_length));
     }
-
 
     void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str)
     {
@@ -182,14 +179,15 @@ namespace aodbc
     {
         handle_odbc_call(handle_stmt, SQL_HANDLE_STMT, SQLFreeHandle(SQL_HANDLE_STMT, handle_stmt));
     }
-    void sql_exec_direct(SQLHSTMT &handle_stmt, std::string &statement, std::vector<message> * messages)
+    void sql_exec_direct(SQLHSTMT &handle_stmt, std::string &statement, std::vector< message > *messages)
     {
         if (messages)
         {
             handle_odbc_call(
                 handle_stmt,
                 SQL_HANDLE_STMT,
-                SQLExecDirect(handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()),messages);
+                SQLExecDirect(handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()),
+                messages);
         }
         else
         {
@@ -198,7 +196,6 @@ namespace aodbc
                 SQL_HANDLE_STMT,
                 SQLExecDirect(handle_stmt, reinterpret_cast< unsigned char * >(statement.data()), statement.size()));
         }
-
     }
     void sql_row_count(SQLHSTMT &handle_stmt, SQLLEN *row_count)
     {
