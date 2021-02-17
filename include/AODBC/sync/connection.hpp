@@ -15,6 +15,7 @@ namespace aodbc::sync
         connection(environment &env = get_default_env())
         : dbc_(env.get_env())
         , connected_(false)
+        , cancelled_(false)
         {
             // make sure the handle got allocated correctly
             assert(dbc_.get_handle() != SQL_NULL_HDBC);
@@ -37,13 +38,19 @@ namespace aodbc::sync
             sql_driver_connect(dbc_.get_handle(), connection_str);
             connected_ = true;
         }
-        void connect(std::string &connection_str, std::vector< message > *messages = nullptr)
+        bool connect(std::string &connection_str, std::vector< message > *messages = nullptr)
         {
             if (cancelled_)
-                return;
+                return false;
             assert(not connected());
-            sql_driver_connect(dbc_.get_handle(), connection_str, messages);
-            connected_ = true;
+            auto result = sql_driver_connect(dbc_.get_handle(), connection_str, messages);
+            if (result)
+            {
+                connected_ = true;
+                return true;
+            }
+            else
+                return false;
         }
         void disconnect()
         {

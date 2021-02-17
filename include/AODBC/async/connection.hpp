@@ -33,11 +33,11 @@ namespace aodbc::async
                 }
             }
 
-            net::awaitable< void > connect(std::string connection_str, std::vector< message > *messages)
+            net::awaitable< bool > connect(std::string connection_str, std::vector< message > *messages)
             {
                 auto work = [self = shared_from_this(), str = std::move(connection_str), messages]() mutable
-                    -> net::awaitable< void > { co_return self->connection_->connect(str, messages); };
-                co_await net::co_spawn(get_executor(), std::move(work), net::use_awaitable);
+                    -> net::awaitable< bool > { co_return self->connection_->connect(str, messages); };
+                co_return co_await net::co_spawn(get_executor(), std::move(work), net::use_awaitable);
             }
             net::awaitable< void > disconnect()
             {
@@ -109,9 +109,9 @@ namespace aodbc::async
         connection(const connection &other) = delete;
         connection &operator=(const connection &other) = delete;
 
-        net::awaitable< void > connect(std::string connection_str, std::vector< message > *messages = nullptr)
+        net::awaitable< bool > connect(std::string connection_str, std::vector< message > *messages = nullptr)
         {
-            co_await impl_->connect(std::move(connection_str), messages);
+            co_return co_await impl_->connect(std::move(connection_str), messages);
         }
 
         net::awaitable< void > disconnect() { co_await impl_->disconnect(); }

@@ -44,7 +44,7 @@ namespace aodbc
     void sql_set_env_attr(SQLHENV &handle_env, SQLINTEGER attribute, SQLPOINTER value_ptr, SQLINTEGER string_length);
 
     // -------------- DATABASE CONNECTION RELATED CALLS ---------------------
-    void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages);
+    bool sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages);
     void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str);
     void sql_driver_disconnect(SQLHDBC &handle_dbc);
 

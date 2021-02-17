@@ -152,19 +152,23 @@ namespace aodbc
                                           nullptr,
                                           SQL_DRIVER_NOPROMPT));
     }
-    void sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages)
+    bool sql_driver_connect(SQLHDBC &handle_dbc, std::string &in_conn_str, std::vector< message > *messages)
     {
-        handle_odbc_call(handle_dbc,
-                         SQL_HANDLE_DBC,
-                         SQLDriverConnect(handle_dbc,
-                                          nullptr,
-                                          reinterpret_cast< unsigned char * >(in_conn_str.data()),
-                                          SQL_NTS,
-                                          nullptr,
-                                          0,
-                                          nullptr,
-                                          SQL_DRIVER_NOPROMPT),
-                         messages);
+        auto retcode = SQLDriverConnect(handle_dbc,
+                                        nullptr,
+                                        reinterpret_cast< unsigned char * >(in_conn_str.data()),
+                                        SQL_NTS,
+                                        nullptr,
+                                        0,
+                                        nullptr,
+                                        SQL_DRIVER_NOPROMPT);
+        handle_odbc_call(handle_dbc, SQL_HANDLE_DBC,retcode , messages);
+        if (retcode == SQL_SUCCESS_WITH_INFO or retcode == SQL_SUCCESS)
+        {
+            return true;
+        }
+        else
+            return false;
     }
     void sql_driver_disconnect(SQLHDBC &handle_dbc)
     {

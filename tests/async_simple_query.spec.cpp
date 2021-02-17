@@ -117,7 +117,8 @@ struct single_query
     {
         auto messages   = std::vector< aodbc::message >();
         auto connection = aodbc::async::connection();
-        co_await connection.connect(conn_str, &messages);
+        auto result = co_await connection.connect(conn_str, &messages);
+        assert(result);
         {
             // Execute sql
             auto sql     = std::string("select * from testing_more with (nolock);");
