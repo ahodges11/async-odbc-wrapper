@@ -61,11 +61,27 @@ namespace aodbc::types
       public:
         bool null() const { return null_; }
 
-        const T &operator*() const { return val_; }
-        T &      operator*() { return val_; }
+        const T &operator*() const
+        {
+            assert(!null());
+            return val_;
+        }
+        T &operator*()
+        {
+            assert(!null());
+            return val_;
+        }
 
-        const T *operator->() const { return &val_; }
-        T *      operator->() { return &val_; }
+        const T *operator->() const
+        {
+            assert(!null());
+            return &val_;
+        }
+        T *operator->()
+        {
+            assert(!null());
+            return &val_;
+        }
 
       private:
         T    val_;
